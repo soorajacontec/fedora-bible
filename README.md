@@ -8,7 +8,7 @@
 
 Installable · Works offline · Mobile-first · Dark & light · Updated for Fedora 44 and DNF5
 
-[**▶ Open the app**](https://YOUR-USERNAME.github.io/fedora-bible/) &nbsp;·&nbsp;
+[**▶ Open the app**](https://soorajacontec.github.io/fedora-bible/) &nbsp;·&nbsp;
 [Report a problem](../../issues/new?template=bug_report.md) &nbsp;·&nbsp;
 [Suggest a command](../../issues/new?template=command_request.md)
 
