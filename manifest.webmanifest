@@ -1,0 +1,25 @@
+{
+  "name": "Fedora Bible — Linux Command Reference",
+  "short_name": "Fedora Bible",
+  "description": "Offline Fedora Linux command reference with options, flags and live terminal examples.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#070b16",
+  "theme_color": "#070b16",
+  "categories": ["developer", "education", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ],
+  "shortcuts": [
+    { "name": "Terminal playground", "url": "./#term", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "DNF", "url": "./#dnf", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Firewall", "url": "./#firewall", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

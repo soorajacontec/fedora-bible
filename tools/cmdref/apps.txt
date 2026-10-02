@@ -1,0 +1,683 @@
+@fedpkg ~~ Fedora packager tool for dist-git, Koji and Bodhi
+$ fedpkg [GLOBAL-OPTIONS] COMMAND [OPTIONS]
+- clone PKG ~~ Clone a package repo (-a = anonymous)
+- switch-branch BRANCH ~~ Change to f44, rawhide (main)…
+- prep / local / mockbuild ~~ Unpack / build locally / build in mock
+- lint ~~ Run rpmlint on spec + builds
+- sources ~~ Download source tarballs from the lookaside cache
+- new-sources FILE ~~ Replace sources with new tarball(s)
+- upload FILE ~~ Add another source tarball
+- scratch-build ~~ Test build in Koji (--srpm builds your local tree)
+- build ~~ Official Koji build of the pushed commit
+- push ~~ git push to dist-git
+- update ~~ Create a Bodhi update
+- srpm ~~ Make a source RPM
+- verrel ~~ Print name-version-release
+> fedpkg clone -a hello ~~ Anyone can clone
+> fedpkg scratch-build --srpm ~~ Test your changes in Koji
+> fedpkg update --type bugfix --notes "Fix crash" ~~ Release to users
+
+@mock ~~ Build RPMs in a clean chroot
+$ mock -r CONFIG [OPTIONS] --rebuild SRPM
+$ mock -r CONFIG --buildsrpm --spec FILE --sources DIR
+- -r CONFIG ~~ Target, e.g. fedora-44-x86_64 (see /etc/mock)
+- --rebuild ~~ Build binary RPMs from an SRPM
+- --buildsrpm ~~ Build an SRPM from spec + sources
+- --resultdir DIR ~~ Where results go
+- --shell ~~ Shell inside the chroot
+- --install PKG ~~ Install packages into the chroot
+- --clean ~~ Remove the chroot
+- --scrub=all ~~ Remove chroots + caches
+- --no-clean ~~ Reuse the chroot
+- --enable-network ~~ Allow network in the build
+- --with / --without OPT ~~ Toggle %bcond options
+> mock -r fedora-44-x86_64 --rebuild hello-2.12.1-1.fc44.src.rpm ~~ Clean F44 build
+> mock -r fedora-rawhide-x86_64 --shell ~~ Poke around Rawhide
+
+@rpmbuild ~~ Build RPM packages from a spec file
+$ rpmbuild -bSTAGE [OPTIONS] SPECFILE
+$ rpmbuild --rebuild SRPM
+- -ba ~~ Build source + binary packages
+- -bb ~~ Binary packages only
+- -bs ~~ Source package only
+- -bp ~~ Run %prep only
+- -bc / -bi ~~ Stop after %build / %install
+- --rebuild SRPM ~~ Rebuild from a source RPM
+- --nocheck ~~ Skip %check
+- --define "NAME VALUE" ~~ Set a macro
+- --with / --without FEATURE ~~ Toggle %bcond
+- --target ARCH ~~ Target architecture
+> rpmbuild -ba ~/rpmbuild/SPECS/hello.spec ~~ Full build
+> rpmbuild -bp hello.spec ~~ Test patches apply
+
+@rpmlint ~~ Check RPMs and spec files for common mistakes
+$ rpmlint [OPTIONS] FILE...
+- -i ~~ Explain each warning
+- -r FILE ~~ Use a filter/config file
+- -s ~~ Strict mode
+- -e ID ~~ Explain a message ID
+> rpmlint hello.spec ~/rpmbuild/RPMS/x86_64/hello-*.rpm ~~ Spec + built package
+
+@spectool ~~ Show or download the sources of a spec file
+$ spectool [OPTIONS] SPECFILE
+- -g ~~ Download sources
+- -R ~~ Into the rpmbuild SOURCES directory
+- -l ~~ List sources
+- -a / -s N / -p N ~~ All / source N / patch N
+> spectool -g -R hello.spec ~~ Fetch sources
+
+@rpmdev-setuptree ~~ Create the ~/rpmbuild directory tree
+$ rpmdev-setuptree
+- ~/rpmbuild/SPECS ~~ Spec files
+- ~/rpmbuild/SOURCES ~~ Tarballs + patches
+- ~/rpmbuild/RPMS / SRPMS ~~ Results
+> rpmdev-setuptree ~~ Run once per user
+
+@copr-cli ~~ Build packages in Fedora COPR
+$ copr-cli COMMAND [OPTIONS]
+- whoami ~~ Check your API token
+- create NAME --chroot CH ~~ New project
+- build PROJECT SRPM|URL ~~ Build
+- buildscm PROJECT --clone-url URL ~~ Build from git
+- list ~~ Your projects
+- status BUILD_ID ~~ Build state
+- modify PROJECT ~~ Change settings
+- delete PROJECT ~~ Remove
+- --nowait ~~ Don't wait for builds
+> copr-cli build hello hello-1.0-1.fc44.src.rpm ~~ Upload + build
+
+@koji ~~ Fedora build system client
+$ koji COMMAND [OPTIONS]
+- list-builds --package=PKG ~~ Builds of a package
+- latest-build TAG PKG ~~ Newest build in a tag
+- buildinfo NVR ~~ Details of a build
+- download-build NVR ~~ Download RPMs (--arch=x86_64)
+- watch-task ID ~~ Follow a task
+- taskinfo ID ~~ Task details
+- list-tagged TAG PKG ~~ Builds in a tag
+> koji download-build --arch=x86_64 hello-2.12.1-5.fc44 ~~ Grab RPMs
+
+@bodhi ~~ Fedora updates system client
+$ bodhi updates COMMAND [OPTIONS]
+- updates query --packages PKG ~~ Find updates
+- updates comment ID TEXT --karma 1 ~~ Feedback (+1 / -1)
+- updates download --updateid ID ~~ Get the RPMs to test
+- updates new BUILDS ~~ Create an update
+- overrides save NVR ~~ Buildroot override
+> bodhi updates query --packages hello --status testing ~~ Updates waiting for testers
+
+@ramalama ~~ Run AI models locally inside containers
+$ ramalama [GLOBAL-OPTIONS] COMMAND [OPTIONS] MODEL
+- pull MODEL ~~ Download (ollama://, hf://, oci:// or short name)
+- run MODEL ~~ Chat in the terminal
+- serve MODEL ~~ OpenAI-compatible API + web UI
+- list / ls ~~ Downloaded models
+- ps / containers ~~ Running models
+- stop NAME ~~ Stop a served model
+- rm MODEL ~~ Delete a model
+- info ~~ GPU, engine + image info
+- bench MODEL ~~ Benchmark
+- -d ~~ (serve) Run detached
+- -p PORT ~~ (serve) Port
+- --name NAME ~~ Container name
+- --ngl N ~~ GPU layers (0 = CPU only)
+- --runtime llama.cpp|vllm ~~ Inference engine
+- --nocontainer ~~ Run without containers
+> ramalama run tinyllama ~~ Quick test
+> ramalama serve -d -p 8080 granite3.1-dense:2b ~~ Local API
+
+@ollama ~~ Download and run large language models locally
+$ ollama COMMAND [ARGS]
+- pull MODEL ~~ Download a model
+- run MODEL [PROMPT] ~~ Chat or one-shot answer
+- list ~~ Downloaded models
+- ps ~~ Loaded models + CPU/GPU split
+- show MODEL ~~ Details
+- stop MODEL ~~ Unload from memory
+- rm MODEL ~~ Delete
+- create NAME -f Modelfile ~~ Custom model
+- cp SRC DST ~~ Copy a model
+- serve ~~ Start the server (port 11434)
+- OLLAMA_HOST ~~ Listen address
+- OLLAMA_MODELS ~~ Model storage folder
+> ollama run llama3.2 "Explain btrfs snapshots" ~~ One-shot
+> ollama ps ~~ What is loaded
+
+@llama-cli ~~ llama.cpp command-line inference
+$ llama-cli -m MODEL.gguf [OPTIONS]
+- -m FILE ~~ Model file
+- -p TEXT ~~ Prompt
+- -cnv ~~ Conversation mode
+- -n N ~~ Max tokens
+- -c N ~~ Context size
+- -ngl N ~~ GPU layers
+- -t N ~~ CPU threads
+- --temp X ~~ Temperature
+> llama-cli -m model.gguf -cnv ~~ Chat
+
+@llama-server ~~ llama.cpp HTTP server with an OpenAI-compatible API
+$ llama-server -m MODEL.gguf [OPTIONS]
+- -m FILE ~~ Model file
+- --port N ~~ Port (default 8080)
+- --host ADDR ~~ Listen address
+- -c N ~~ Context size
+- -ngl N ~~ GPU layers
+- --api-key KEY ~~ Require a key
+> llama-server -m model.gguf --port 8080 -ngl 99 ~~ Serve on GPU
+
+@nvidia-smi ~~ NVIDIA GPU status and management
+$ nvidia-smi [OPTIONS]
+- -l N ~~ Repeat every N seconds
+- --query-gpu=FIELDS ~~ Pick fields (name,memory.used,…)
+- --format=csv ~~ CSV output
+- dmon ~~ Scrolling device monitor
+- pmon ~~ Per-process monitor
+- -q ~~ Full report
+> nvidia-smi --query-gpu=name,memory.used,memory.total --format=csv ~~ VRAM use
+
+@rocm-smi ~~ AMD ROCm GPU status
+$ rocm-smi [OPTIONS]
+- --showuse ~~ GPU use
+- --showmeminfo vram ~~ VRAM use
+- --showtemp ~~ Temperature
+- --showproductname ~~ Model
+> rocm-smi --showmeminfo vram ~~ VRAM
+
+@gamemoderun ~~ Run a program with Feral GameMode optimisations
+$ gamemoderun PROGRAM [ARGS]
+- %command% ~~ Use in Steam launch options
+- /etc/gamemode.ini ~~ System settings
+- ~/.config/gamemode.ini ~~ Your settings
+> gamemoderun %command% ~~ Steam launch option
+
+@gamemoded ~~ GameMode daemon / status tool
+$ gamemoded [OPTIONS]
+- -s ~~ Is GameMode active?
+- -t ~~ Run self-tests
+- -r ~~ Request GameMode until Ctrl+C
+> gamemoded -s ~~ Status
+
+@mangohud ~~ Vulkan/OpenGL overlay for FPS, temperatures and load
+$ mangohud PROGRAM [ARGS]
+- %command% ~~ Use in Steam launch options
+- MANGOHUD=1 ~~ Enable via environment
+- MANGOHUD_CONFIG=fps,gpu_temp ~~ Inline config
+- Shift_R+F12 ~~ Toggle overlay
+- Shift_L+F2 ~~ Start/stop logging
+> mangohud vkcube ~~ Test the overlay
+
+@gamescope ~~ Micro-compositor for games (scaling, HDR, limits)
+$ gamescope [OPTIONS] -- COMMAND
+- -W / -H ~~ Output width / height
+- -w / -h ~~ Game render width / height
+- -r N ~~ Refresh rate
+- -f ~~ Fullscreen
+- -F fsr ~~ FSR upscaling
+- --hdr-enabled ~~ HDR
+> gamescope -W 2560 -H 1440 -r 144 -- %command% ~~ Steam launch option
+
+@wine ~~ Run Windows programs
+$ wine PROGRAM.exe [ARGS]
+- WINEPREFIX=DIR ~~ Which prefix (fake C: drive)
+- WINEARCH=win32 ~~ 32-bit prefix
+- WINEDEBUG=-all ~~ Less output
+- winecfg ~~ Settings dialog
+- uninstaller ~~ Remove programs
+- --version ~~ Version
+> WINEPREFIX=~/.wine-app wine setup.exe ~~ Separate prefix
+
+@winetricks ~~ Install runtimes and fixes into Wine prefixes
+$ winetricks [OPTIONS] VERB...
+- corefonts ~~ Microsoft core fonts
+- vcrun2022 ~~ Visual C++ runtime
+- dotnet48 ~~ .NET Framework 4.8
+- list-installed ~~ What's installed
+- -q ~~ Unattended
+> winetricks -q corefonts vcrun2022 ~~ Common runtimes
+
+@protontricks ~~ winetricks for Steam Proton games
+$ protontricks APPID VERB... | protontricks -s NAME
+- -s NAME ~~ Search a game's app ID
+- -l ~~ List installed games
+- APPID winecfg ~~ winecfg for the game
+- -c CMD APPID ~~ Run a command in the prefix
+> protontricks -s "elden ring" ~~ Find the ID
+
+@vulkaninfo ~~ Show Vulkan devices and capabilities
+$ vulkaninfo [OPTIONS]
+- --summary ~~ Short overview
+- --json ~~ JSON output
+- --html ~~ HTML report
+> vulkaninfo --summary ~~ GPUs + drivers
+
+@glxinfo ~~ Show OpenGL information
+$ glxinfo [OPTIONS]
+- -B ~~ Brief: renderer + versions
+- -s ~~ Single-line extension lists
+> glxinfo -B ~~ Which GPU renders OpenGL
+
+@terraform ~~ Infrastructure as code
+$ terraform [GLOBAL] COMMAND [OPTIONS]
+- init ~~ Download providers, set up backend
+- fmt ~~ Format files (-recursive)
+- validate ~~ Check configuration
+- plan ~~ Preview changes (-out=FILE)
+- apply ~~ Make the changes
+- destroy ~~ Delete everything managed
+- output ~~ Show outputs (-raw NAME)
+- state list / show / rm ~~ Inspect / forget state
+- import ADDR ID ~~ Adopt an existing resource
+- workspace new / select ~~ Separate state per environment
+- -var / -var-file ~~ Set variables
+- -auto-approve ~~ No confirmation
+> terraform plan -out=tfplan && terraform apply tfplan ~~ Safe apply
+
+@tofu ~~ OpenTofu: open-source Terraform fork
+$ tofu COMMAND [OPTIONS]
+- init / plan / apply / destroy ~~ Same as terraform
+- fmt / validate ~~ Format / check
+- state ~~ Inspect state
+> tofu init && tofu plan ~~ Same workflow as Terraform
+
+@aws ~~ AWS command-line interface
+$ aws [OPTIONS] SERVICE COMMAND [ARGS]
+- configure ~~ Set keys + region
+- configure sso ~~ IAM Identity Center login
+- sts get-caller-identity ~~ Who am I?
+- s3 ls / cp / sync ~~ S3 files
+- ec2 describe-instances ~~ List VMs
+- --profile NAME ~~ Credentials profile
+- --region REGION ~~ Region
+- --output json|table|text|yaml ~~ Output format
+- --query EXPR ~~ JMESPath filter
+> aws s3 sync ./site s3://my-site --delete ~~ Deploy a static site
+
+@gcloud ~~ Google Cloud CLI
+$ gcloud GROUP COMMAND [FLAGS]
+- init ~~ Log in + set defaults
+- auth login ~~ Log in
+- config set project ID ~~ Default project
+- compute instances list ~~ VMs
+- compute ssh VM --zone Z ~~ SSH into a VM
+- storage cp SRC DST ~~ Cloud Storage copy
+- --project ID ~~ One-off project
+- --format=json ~~ Output format
+> gcloud compute instances list ~~ VMs
+
+@az ~~ Azure CLI
+$ az GROUP COMMAND [ARGS]
+- login ~~ Browser login
+- account show / set -s ~~ Current / switch subscription
+- group create / delete ~~ Resource groups
+- vm list -d ~~ VMs with IPs + state
+- vm create ~~ New VM
+- -o table|json|tsv ~~ Output format
+- --query EXPR ~~ JMESPath filter
+> az vm list -d -o table ~~ VMs
+
+@minikube ~~ Local single-node Kubernetes cluster
+$ minikube COMMAND [FLAGS]
+- start ~~ Create / start (--driver podman|kvm2)
+- status ~~ Cluster state
+- stop / delete ~~ Stop / remove (--all)
+- kubectl -- ARGS ~~ Bundled kubectl
+- dashboard ~~ Web dashboard
+- addons enable NAME ~~ ingress, metrics-server…
+- service NAME --url ~~ URL of a service
+- image load IMAGE ~~ Copy an image into the cluster
+- -p PROFILE ~~ Several clusters
+- --cpus / --memory ~~ Resources
+> minikube start --driver=podman ~~ Cluster in Podman
+
+@cloud-init ~~ First-boot configuration of cloud VMs
+$ cloud-init COMMAND [OPTIONS]
+- status --wait ~~ Wait for first boot to finish
+- status --long ~~ Details + errors
+- schema -c FILE ~~ Validate user-data
+- query userdata ~~ Show received user-data
+- clean --logs ~~ Run again next boot
+> cloud-init status --long ~~ Did it work?
+
+@kdumpctl ~~ Control the kdump crash-dump service
+$ kdumpctl COMMAND
+- status ~~ Operational?
+- showmem ~~ Reserved memory
+- reset-crashkernel ~~ Set crashkernel= to the default
+- estimate ~~ Suggested memory size
+- rebuild ~~ Rebuild the kdump initramfs
+> sudo kdumpctl status ~~ Check
+
+@ksvalidator ~~ Validate a kickstart file
+$ ksvalidator [OPTIONS] KSFILE
+- -v VERSION ~~ Check against a specific release (e.g. F44)
+- -e ~~ Treat deprecated commands as errors
+- -l ~~ List supported versions
+> ksvalidator ks.cfg ~~ Check before installing
+
+@fastboot ~~ Talk to an Android bootloader
+$ fastboot [OPTIONS] COMMAND
+- devices ~~ Phones in fastboot mode
+- getvar NAME|all ~~ Bootloader variables
+- flash PARTITION FILE ~~ Write an image
+- boot FILE ~~ Boot an image once
+- flashing unlock / lock ~~ Unlock / lock (wipes data)
+- --set-active=a|b ~~ Switch A/B slot
+- -w ~~ Wipe userdata
+- reboot [bootloader] ~~ Reboot
+> fastboot boot recovery.img ~~ Try without flashing
+
+@scrcpy ~~ Mirror and control an Android phone
+$ scrcpy [OPTIONS]
+- -m SIZE ~~ Max resolution
+- -b RATE ~~ Video bitrate
+- -S / --turn-screen-off ~~ Phone screen off
+- -w / --stay-awake ~~ Keep awake
+- --record FILE ~~ Record
+- --no-audio ~~ No audio forwarding
+- --video-source=camera ~~ Use the camera
+- --tcpip[=IP] ~~ Wireless
+- --keyboard=uhid ~~ Physical-keyboard emulation
+- -s SERIAL ~~ Pick a device
+> scrcpy -m 1280 --turn-screen-off ~~ Light, screen off
+
+@kdeconnect-cli ~~ Control KDE Connect / GSConnect from the terminal
+$ kdeconnect-cli [OPTIONS]
+- -a / -l ~~ Available / all devices
+- --refresh ~~ Search the network
+- -n NAME / -d ID ~~ Choose the device
+- --pair / --unpair ~~ Pairing
+- --ping-msg TEXT ~~ Notification
+- --share FILE|URL ~~ Send
+- --ring ~~ Find the phone
+- --send-sms TEXT --destination NUM ~~ Text message
+> kdeconnect-cli -n Pixel --share report.pdf ~~ Send a file
+
+@mtr ~~ Traceroute and ping combined
+$ mtr [OPTIONS] HOST
+- -r -c N ~~ Report with N probes
+- -w ~~ Wide report
+- -z ~~ AS numbers
+- -T -P PORT ~~ TCP probes to a port
+- -u ~~ UDP probes
+- -4 / -6 ~~ IP version
+- -n ~~ No DNS
+- -b ~~ Names and IPs
+> mtr -rwzc 50 1.1.1.1 ~~ Shareable report
+
+@avahi-browse ~~ Browse mDNS/DNS-SD services on the LAN
+$ avahi-browse [OPTIONS] SERVICE-TYPE | -a
+- -a ~~ All services
+- -r ~~ Resolve addresses
+- -t ~~ Terminate after listing
+- -p ~~ Parsable output
+> avahi-browse -art ~~ Everything on the LAN
+
+@tailscale ~~ Tailscale mesh VPN client
+$ tailscale COMMAND [FLAGS]
+- up ~~ Connect / change settings
+- down ~~ Disconnect
+- status ~~ Peers
+- ip -4 ~~ Own address
+- ping HOST ~~ Path to a peer
+- set --exit-node=HOST ~~ Use an exit node
+- up --advertise-exit-node ~~ Be an exit node
+- up --advertise-routes=CIDR ~~ Subnet router
+- up --ssh ~~ Tailscale SSH
+- file cp FILE HOST: ~~ Taildrop
+- serve / funnel ~~ Share a local service
+- netcheck ~~ Network diagnostics
+> sudo tailscale up ~~ Log in
+
+@systemd-cryptenroll ~~ Enrol TPM2, FIDO2, PKCS#11 or recovery keys for LUKS
+$ systemd-cryptenroll [OPTIONS] DEVICE
+- (no options) ~~ List key slots
+- --tpm2-device=auto ~~ Enrol the TPM
+- --tpm2-pcrs=7 ~~ Bind to Secure Boot state
+- --tpm2-with-pin=yes ~~ Require a PIN too
+- --fido2-device=auto ~~ Enrol a security key
+- --recovery-key ~~ Generate a recovery key
+- --password ~~ Add a password
+- --wipe-slot=SLOT|TYPE ~~ Remove enrolments
+> sudo systemd-cryptenroll /dev/nvme0n1p3 --tpm2-device=auto ~~ Auto-unlock
+
+@fapolicyd-cli ~~ Manage the fapolicyd application allow-list
+$ fapolicyd-cli OPTION
+- --list ~~ Show rules
+- --file add PATH ~~ Trust a file (--trust-file NAME)
+- --file delete PATH ~~ Remove trust
+- --update ~~ Reload trust database
+- --check-trustdb ~~ Verify trusted files
+- --check-config ~~ Validate config
+- --dump-db ~~ Print trust database
+> sudo fapolicyd-cli --file add /opt/tool/bin/tool --trust-file tool ~~ Allow a program
+
+@sops ~~ Encrypt values in YAML, JSON, ENV and INI files
+$ sops [OPTIONS] FILE
+- -e / -d ~~ Encrypt / decrypt
+- -i ~~ In place
+- --age KEY ~~ Recipient
+- --extract PATH ~~ One value
+- exec-env FILE CMD ~~ Secrets as env vars
+- updatekeys FILE ~~ Apply .sops.yaml key changes
+- rotate ~~ New data key
+> sops secrets.enc.yaml ~~ Edit encrypted file
+
+@locate ~~ Find files by name using an index (plocate)
+$ locate [OPTIONS] PATTERN
+- -i ~~ Ignore case
+- -c ~~ Count only
+- -b ~~ Match the base name
+- -e ~~ Only existing files
+- -l N ~~ Limit results
+- -r REGEX ~~ Regular expression
+> locate -i invoice ~~ Instant search
+
+@updatedb ~~ Update the locate database
+$ sudo updatedb
+- -v ~~ Verbose
+- /etc/updatedb.conf ~~ Excluded paths
+> sudo updatedb ~~ Refresh now
+
+@duf ~~ Disk usage per filesystem, nicely formatted
+$ duf [OPTIONS] [PATH...]
+- --only local,network ~~ Filter types
+- --hide-fs tmpfs ~~ Hide filesystem types
+- --json ~~ JSON output
+- --sort size ~~ Sort column
+> duf --only local ~~ Real disks
+
+@dust ~~ Disk usage tree (du + tree)
+$ dust [OPTIONS] [PATH...]
+- -d N ~~ Depth
+- -n N ~~ Number of rows
+- -r ~~ Reverse order
+- -s ~~ Apparent size
+- -X PATTERN ~~ Exclude
+> dust -d 2 ~ ~~ Where is my space?
+
+@automount ~~ autofs daemon
+$ automount [OPTIONS]
+- -f ~~ Foreground
+- -v / -d ~~ Verbose / debug
+> sudo automount -f -v ~~ Debug maps
+
+@readelf ~~ Display information about ELF files
+$ readelf [OPTIONS] FILE
+- -h ~~ ELF header
+- -S ~~ Section headers
+- -l ~~ Program headers
+- -d ~~ Dynamic section (NEEDED, RPATH)
+- -s ~~ Symbol table
+- -n ~~ Notes (Build ID)
+- -a ~~ Everything
+> readelf -d /usr/bin/ls | grep NEEDED ~~ Required libraries
+
+@objdump ~~ Display and disassemble object files
+$ objdump [OPTIONS] FILE
+- -d ~~ Disassemble code
+- -M intel ~~ Intel syntax
+- -h ~~ Section headers
+- -t ~~ Symbols
+- -S ~~ Mix source (needs debug info)
+- --no-show-raw-insn ~~ Hide bytes
+> objdump -d -M intel ./app | less ~~ Read the machine code
+
+@nm ~~ List symbols from object files
+$ nm [OPTIONS] FILE
+- -C ~~ Demangle C++
+- -D ~~ Dynamic symbols
+- --defined-only ~~ Only defined
+- -u ~~ Only undefined
+- T / U / D ~~ Text (code) / undefined / data
+> nm -D --defined-only /usr/lib64/libz.so.1 ~~ Exported functions
+
+@patchelf ~~ Modify ELF executables and libraries
+$ patchelf [OPTIONS] FILE
+- --print-rpath ~~ Show RPATH
+- --set-rpath PATH ~~ Set RPATH ($ORIGIN = binary dir)
+- --print-needed ~~ Needed libraries
+- --add-needed LIB ~~ Add a dependency
+- --set-interpreter FILE ~~ Change the loader
+> patchelf --set-rpath '$ORIGIN/../lib' ./app ~~ Relocatable app
+
+@pkg-config ~~ Compiler and linker flags for installed libraries
+$ pkg-config [OPTIONS] LIBRARY...
+- --cflags ~~ Include flags
+- --libs ~~ Linker flags
+- --modversion ~~ Version
+- --exists ~~ Exit status only
+- --list-all ~~ Every library
+> gcc app.c $(pkg-config --cflags --libs gtk4) ~~ Build against GTK 4
+
+@glab ~~ GitLab command-line tool
+$ glab COMMAND [SUBCOMMAND] [FLAGS]
+- auth login ~~ Log in
+- mr create / list / checkout / merge ~~ Merge requests
+- issue list / create / view ~~ Issues
+- ci status / view / trace ~~ Pipelines
+- repo clone ~~ Clone
+- -R GROUP/PROJECT ~~ Another repo
+> glab mr create --fill --draft ~~ MR from current branch
+
+@perl ~~ Perl interpreter (great for one-liners)
+$ perl [SWITCHES] -e 'CODE' [FILES]
+- -e CODE ~~ Run code
+- -n ~~ Loop over lines
+- -p ~~ Loop + print
+- -i[EXT] ~~ Edit in place
+- -l ~~ Handle newlines
+- -a ~~ Split into @F
+- -F SEP ~~ Field separator
+> perl -pi -e 's/foo/bar/g' *.txt ~~ Replace everywhere
+
+@dkms ~~ Dynamic Kernel Module Support
+$ dkms COMMAND MODULE/VERSION [OPTIONS]
+- status ~~ What's built for which kernel
+- add PATH ~~ Register source
+- build MOD/VER ~~ Compile
+- install MOD/VER ~~ Build + install
+- remove MOD/VER --all ~~ Remove from all kernels
+- autoinstall ~~ Build all for the running kernel
+- -k KERNEL ~~ Target kernel
+> dkms status ~~ Overview
+
+@akmods ~~ Rebuild RPM Fusion kmod packages for new kernels
+$ akmods [OPTIONS]
+- --force ~~ Rebuild even if current
+- --kernels VER ~~ Kernel to build for
+- --akmod NAME ~~ Only one module
+> sudo akmods --force --kernels $(uname -r) ~~ Fix a missing driver
+
+@numactl ~~ Control NUMA placement of processes
+$ numactl [OPTIONS] COMMAND
+- --hardware / -H ~~ Show nodes
+- --cpunodebind=N ~~ CPUs of node N
+- --membind=N ~~ Memory from node N
+- --interleave=all ~~ Spread memory
+- --show ~~ Current policy
+> numactl --hardware ~~ Topology
+
+@ltrace ~~ Trace library calls of a program
+$ ltrace [OPTIONS] COMMAND | ltrace -p PID
+- -c ~~ Summary counts
+- -e PATTERN ~~ Filter functions
+- -S ~~ Include system calls
+- -f ~~ Follow children
+- -p PID ~~ Attach
+- -o FILE ~~ Output file
+- -t / -T ~~ Timestamps / time spent
+> ltrace -c ls ~~ Which calls are most frequent
+
+@incus ~~ System containers and virtual machines
+$ incus COMMAND [ARGS] [FLAGS]
+- launch IMAGE NAME ~~ Create + start (--vm for a VM)
+- list ~~ Instances
+- exec NAME -- CMD ~~ Run a command inside
+- shell NAME ~~ Root shell
+- file push / pull ~~ Copy files
+- snapshot create / restore ~~ Snapshots
+- start / stop / restart / delete ~~ Lifecycle
+- config set / edit ~~ Settings
+- image list images: ~~ Available images
+- admin init ~~ First setup
+> incus launch images:fedora/44 web ~~ New container
+
+@vagrant ~~ Reproducible development VMs
+$ vagrant COMMAND [OPTIONS]
+- init BOX ~~ Create a Vagrantfile
+- up ~~ Create + boot (--provider=libvirt)
+- ssh ~~ Log in
+- status / global-status ~~ State
+- provision ~~ Re-run provisioners
+- halt / reload ~~ Stop / restart
+- destroy -f ~~ Delete
+- box list / add / prune ~~ Manage boxes
+> vagrant up --provider=libvirt ~~ Start on KVM
+
+@doveadm ~~ Dovecot administration
+$ doveadm COMMAND [OPTIONS]
+- auth test USER ~~ Test login
+- mailbox list -u USER ~~ Folders
+- who ~~ Connected users
+- quota get -u USER ~~ Quota
+- log errors ~~ Recent errors
+- reload ~~ Reload config
+> sudo doveadm auth test alice ~~ Login works?
+
+@acme.sh ~~ ACME client for TLS certificates (shell script)
+$ acme.sh --issue -d DOMAIN [MODE] | acme.sh --install-cert -d DOMAIN …
+- --issue ~~ Get a certificate
+- -d DOMAIN ~~ Domain (repeat for SANs)
+- -w DIR ~~ Webroot mode
+- --dns dns_PROVIDER ~~ DNS mode (wildcards)
+- --standalone ~~ Built-in web server
+- --install-cert ~~ Copy files + set reload command
+- --renew / --force ~~ Renew now
+- --list ~~ Certificates
+- --set-default-ca --server letsencrypt ~~ Choose CA
+- --staging ~~ Test CA
+> acme.sh --issue -d example.com -w /var/www/html ~~ Webroot
+
+@pandoc ~~ Universal document converter
+$ pandoc [OPTIONS] INPUT -o OUTPUT
+- -f / -t FORMAT ~~ Input / output format
+- -o FILE ~~ Output (format from extension)
+- -s ~~ Standalone document
+- --toc ~~ Table of contents
+- --pdf-engine=NAME ~~ typst, weasyprint, xelatex…
+- --extract-media=DIR ~~ Save embedded images
+- --metadata KEY=VAL ~~ Title, author…
+- --reference-doc=FILE ~~ Styles for docx/odt
+> pandoc notes.md -o notes.docx ~~ Markdown to Word
+
+@aria2c ~~ Multi-connection download utility (HTTP, FTP, BitTorrent)
+$ aria2c [OPTIONS] URI...
+- -x N ~~ Connections per server
+- -s N ~~ Split into N pieces
+- -c ~~ Continue a download
+- -i FILE ~~ URLs from a file
+- -j N ~~ Parallel downloads
+- -d DIR / -o NAME ~~ Folder / file name
+- --max-download-limit=RATE ~~ Speed limit
+- --seed-time=MIN ~~ Torrent seeding time
+> aria2c -x 8 -s 8 https://example.com/big.iso ~~ Faster download

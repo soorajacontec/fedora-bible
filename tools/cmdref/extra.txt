@@ -1,0 +1,363 @@
+@for ~~ Bash loop over a list
+$ for VAR in LIST; do COMMANDS; done
+$ for ((i=1; i<=N; i++)); do COMMANDS; done
+- in a b c ~~ Loop over words
+- in *.jpg ~~ Loop over files (quote "$f"!)
+- in {1..10} ~~ Number range
+- in $(cmd) ~~ Over command output (careful with spaces)
+- break / continue ~~ Leave / skip an iteration
+> for f in *.png; do magick "$f" "${f%.png}.webp"; done ~~ Convert every PNG
+> for h in web1 web2 web3; do ssh "$h" uptime; done ~~ Same command on several servers
+> for i in {1..5}; do echo "Try $i"; done ~~ Count
+
+@export ~~ Make a shell variable visible to programs
+$ export NAME=VALUE
+- export NAME ~~ Export an existing variable
+- -n NAME ~~ Un-export
+- -p ~~ List exported variables
+- ~/.bashrc ~~ Put exports here to keep them
+> export EDITOR=nano ~~ Default editor for this session
+> export PATH="$HOME/.local/bin:$PATH" ~~ Add a folder to PATH
+
+@shopt ~~ Bash shell options
+$ shopt [-s|-u] OPTION
+- -s ~~ Set (enable)
+- -u ~~ Unset (disable)
+- globstar ~~ ** matches folders recursively
+- extglob ~~ Extended patterns like !(*.txt)
+- nullglob ~~ Unmatched globs expand to nothing
+- dotglob ~~ * also matches hidden files
+> shopt -s globstar && ls **/*.md ~~ All Markdown files below here
+
+@udisksctl ~~ Mount and manage disks without root
+$ udisksctl COMMAND [OPTIONS]
+- status ~~ Drives overview
+- mount -b DEV ~~ Mount as your user (/run/media/$USER/…)
+- unmount -b DEV ~~ Unmount
+- unlock -b DEV ~~ Unlock LUKS
+- power-off -b DEV ~~ Safely remove a USB drive
+- loop-setup -f FILE ~~ Image file as a device
+> udisksctl mount -b /dev/sdb1 ~~ Mount a USB stick
+> udisksctl power-off -b /dev/sdb ~~ Safe to unplug
+
+@gio ~~ GNOME file operations (trash, mounts, MIME)
+$ gio COMMAND [ARGS]
+- trash FILE ~~ Move to Trash
+- trash --list / --empty ~~ View / empty Trash
+- mount -l ~~ Network/MTP mounts (GVfs)
+- open FILE ~~ Open with the default app
+- info FILE ~~ Metadata
+> gio trash old.txt ~~ Delete to Trash (recoverable)
+> gio trash --empty ~~ Empty Trash
+
+@alternatives ~~ Choose between installed versions of a command
+$ alternatives [--display|--config|--set] NAME
+- --config NAME ~~ Pick interactively
+- --display NAME ~~ Show choices
+- --list ~~ All managed names
+- --set NAME PATH ~~ Choose non-interactively
+> sudo alternatives --config java ~~ Switch Java version
+
+@mdadm ~~ Linux software RAID
+$ mdadm [MODE] [OPTIONS] DEVICES
+- --create /dev/md0 --level=1 --raid-devices=2 ~~ New mirror
+- --detail /dev/md0 ~~ Status
+- --add / --fail / --remove ~~ Replace disks
+- --examine DEV ~~ RAID metadata on a disk
+- --monitor --scan ~~ Watch for failures
+> cat /proc/mdstat ~~ Quick RAID status
+> sudo mdadm --detail /dev/md0 ~~ Details
+
+@modinfo ~~ Information about a kernel module
+$ modinfo [OPTIONS] MODULE
+- -F FIELD ~~ One field (version, parm, alias…)
+- -p ~~ Parameters
+> modinfo -F version nvidia ~~ Built NVIDIA driver version
+> modinfo -p iwlwifi ~~ Tunable parameters
+
+@chage ~~ Password ageing
+$ sudo chage [OPTIONS] USER
+- -l ~~ Show settings
+- -M DAYS ~~ Max days between changes
+- -E DATE ~~ Account expiry (YYYY-MM-DD, -1 = never)
+- -d 0 ~~ Force a change at next login
+> sudo chage -l aisha ~~ Ageing info
+
+@notify-send ~~ Desktop notification from a script
+$ notify-send [OPTIONS] TITLE [BODY]
+- -u low|normal|critical ~~ Urgency
+- -t MS ~~ Timeout
+- -i ICON ~~ Icon name/path
+- -a APP ~~ App name
+> notify-send "Backup done" "Took 4 minutes" ~~ Pop-up
+> make && notify-send "Build OK" || notify-send -u critical "Build failed" ~~ After a long job
+
+@udevadm ~~ udev device manager tool
+$ udevadm COMMAND [OPTIONS]
+- monitor --property ~~ Watch plug/unplug events
+- info -a DEV ~~ Attributes for writing rules
+- info --query=property DEV ~~ Properties
+- control --reload ~~ Reload rules
+- trigger ~~ Re-apply rules
+> udevadm monitor --udev --property ~~ Then plug the device in
+> sudo udevadm control --reload && sudo udevadm trigger ~~ Apply new rules
+
+@logrotate ~~ Rotate and compress log files
+$ logrotate [OPTIONS] CONFIG
+- -d ~~ Debug / dry run
+- -f ~~ Force rotation now
+- -v ~~ Verbose
+> sudo logrotate -d /etc/logrotate.d/myapp ~~ Test a config
+> sudo logrotate -f /etc/logrotate.d/myapp ~~ Rotate now
+
+@perf ~~ Linux performance profiler
+$ perf COMMAND [OPTIONS]
+- top ~~ Live hottest functions
+- stat CMD ~~ Counters for a run
+- record -g CMD ~~ Profile with call graphs
+- report ~~ Read the recording
+> sudo perf top ~~ What is using the CPU right now
+> perf stat -d ./myprog ~~ Cycles, cache misses
+
+@fwupdmgr ~~ Firmware updates (LVFS)
+$ fwupdmgr COMMAND
+- refresh ~~ Update the firmware catalogue
+- get-devices ~~ Updatable devices
+- get-updates ~~ Available updates
+- update ~~ Install them (may reboot)
+- get-history ~~ Past updates
+> fwupdmgr refresh && fwupdmgr get-updates ~~ Check
+> fwupdmgr update ~~ Install
+
+@pstree ~~ Show processes as a tree
+$ pstree [OPTIONS] [PID|USER]
+- -p ~~ Show PIDs
+- -a ~~ Show arguments
+- -u ~~ Show user changes
+- -s PID ~~ Parents of a process
+> pstree -p $USER ~~ My processes
+> pstree -s -p 1234 ~~ Who started PID 1234
+
+@sar ~~ Historical system activity (sysstat)
+$ sar [OPTIONS] [INTERVAL [COUNT]]
+- -u ~~ CPU
+- -r ~~ Memory
+- -d ~~ Disks
+- -n DEV ~~ Network
+- -f /var/log/sa/saDD ~~ Another day
+- -s / -e HH:MM ~~ Time window
+> sar -u -s 09:00 -e 12:00 ~~ CPU this morning
+> sar -n DEV 1 5 ~~ Network now
+
+@parallel ~~ Run jobs in parallel (GNU parallel)
+$ parallel [OPTIONS] COMMAND ::: ARGS
+- -j N ~~ Jobs at once
+- ::: a b c ~~ Arguments
+- {} / {.} ~~ Argument / without extension
+- --bar ~~ Progress bar
+> parallel -j4 magick {} {.}.webp ::: *.jpg ~~ Convert 4 at a time
+
+@gh ~~ GitHub command line
+$ gh COMMAND [SUBCOMMAND] [FLAGS]
+- auth login ~~ Sign in
+- repo clone / create ~~ Repositories
+- pr create / list / checkout / merge ~~ Pull requests
+- issue list / create ~~ Issues
+- run list / watch ~~ Actions
+> gh pr create --fill ~~ PR from the current branch
+> gh run watch ~~ Follow CI
+
+@mpv ~~ Media player
+$ mpv [OPTIONS] FILE|URL
+- --hwdec=auto ~~ GPU decoding
+- --start=TIME ~~ Start position
+- --speed=1.5 ~~ Playback speed
+- --alang / --slang ~~ Preferred languages
+- --sub-file=FILE ~~ External subtitles
+- --no-video ~~ Audio only
+- --loop-file=inf ~~ Loop
+> mpv --hwdec=auto movie.mkv ~~ Play
+
+@virt-xml ~~ Edit VM settings from the command line
+$ virt-xml VM [--edit [SELECTOR] | --add-device | --remove-device] --OPTION …
+- --edit ~~ Change an existing setting (one per run)
+- --add-device ~~ Add disk, NIC, filesystem…
+- --remove-device ~~ Remove a device
+- --print-diff ~~ Show changes, apply nothing
+- --update ~~ Also apply to the running VM
+> virt-xml f44 --edit --memory 8192 ~~ More RAM
+> virt-xml f44 --add-device --disk size=10,bus=virtio ~~ New disk
+
+@ostree ~~ Low-level OSTree tool (atomic systems)
+$ ostree COMMAND [OPTIONS]
+- admin status ~~ Deployments
+- admin pin N ~~ Keep a deployment
+- admin config-diff ~~ Your /etc changes
+- remote refs REMOTE ~~ Available branches
+- log REF ~~ Commit history
+> ostree admin status ~~ What is installed
+> sudo ostree admin pin 0 ~~ Keep the current deployment
+
+@bootc ~~ Image-based (container) OS updates
+$ bootc COMMAND [OPTIONS]
+- status ~~ Booted / staged / rollback images
+- upgrade ~~ Stage an update (--apply reboots)
+- switch IMAGE ~~ Follow another image
+- rollback ~~ Back to the previous image
+> sudo bootc status ~~ What runs
+> sudo bootc upgrade --apply ~~ Update + reboot
+
+@mokutil ~~ Secure Boot key management (MOK)
+$ mokutil [OPTIONS]
+- --sb-state ~~ Is Secure Boot on?
+- --import KEY.der ~~ Enroll a key at next boot
+- --list-enrolled ~~ Enrolled keys
+- --delete KEY.der ~~ Remove a key
+> mokutil --sb-state ~~ SecureBoot enabled?
+
+@lp ~~ Print files
+$ lp [OPTIONS] FILE...
+- -d PRINTER ~~ Which printer
+- -n N ~~ Copies
+- -o sides=two-sided-long-edge ~~ Duplex
+- -o page-ranges=1-3 ~~ Some pages
+- -o media=A4 ~~ Paper size
+> lp -d Office report.pdf ~~ Print
+
+@faillock ~~ Failed login lockouts
+$ faillock [--user USER] [--reset]
+- --user USER ~~ Show failures
+- --reset ~~ Unlock
+> sudo faillock --user aisha --reset ~~ Unlock after too many attempts
+
+@auditctl ~~ Linux audit rules
+$ sudo auditctl [OPTIONS]
+- -l ~~ List rules
+- -w PATH -p wa -k KEY ~~ Watch writes/attribute changes
+- -s ~~ Status
+- -D ~~ Delete all rules
+> sudo auditctl -w /etc/passwd -p wa -k passwd ~~ Watch a file
+> sudo ausearch -k passwd ~~ See who changed it
+
+@caddy ~~ Caddy web server
+$ caddy COMMAND [OPTIONS]
+- validate --config FILE ~~ Check a Caddyfile
+- fmt --overwrite FILE ~~ Format
+- reload ~~ Apply a new config
+- file-server --browse ~~ Instant static server
+- reverse-proxy --from A --to B ~~ Instant proxy
+- hash-password ~~ For basic_auth
+> caddy validate --config /etc/caddy/Caddyfile ~~ Check
+
+@ddcutil ~~ Control external monitors (DDC/CI)
+$ ddcutil COMMAND [ARGS]
+- detect ~~ Monitors that support DDC
+- getvcp CODE ~~ Read (10 = brightness)
+- setvcp CODE VALUE ~~ Write
+- --display N ~~ Pick a monitor
+> ddcutil setvcp 10 70 ~~ Brightness 70
+
+@usbguard ~~ Allow/block USB devices
+$ sudo usbguard COMMAND
+- list-devices ~~ Devices + allow/block state
+- allow-device ID ~~ Allow now (-p permanent)
+- block-device ID ~~ Block
+- generate-policy ~~ Create rules from current devices
+> sudo usbguard list-devices ~~ Status
+
+@semodule ~~ SELinux policy modules
+$ sudo semodule [OPTIONS]
+- -l ~~ List modules
+- -i FILE.pp ~~ Install a module
+- -r NAME ~~ Remove
+- -DB ~~ Disable "dontaudit" (show hidden denials)
+- -B ~~ Rebuild policy (restore dontaudit)
+> sudo semodule -l | grep my ~~ Custom modules
+
+@realm ~~ Join Active Directory / IPA domains
+$ realm COMMAND [ARGS]
+- discover DOMAIN ~~ What it needs
+- join DOMAIN -U ADMIN ~~ Join
+- list ~~ Joined domains
+- permit / deny ~~ Login access
+- leave DOMAIN ~~ Leave
+> realm discover ad.example.com ~~ Check before joining
+
+@targetcli ~~ iSCSI target configuration
+$ sudo targetcli [PATH COMMAND]
+- /backstores/fileio create ~~ Image-file disk
+- /iscsi create IQN ~~ Target
+- …/luns create ~~ Attach a disk
+- …/acls create IQN ~~ Allow a client
+- saveconfig ~~ Persist
+- ls ~~ Tree view
+> sudo targetcli ls ~~ Current config
+
+@v4l2-ctl ~~ Webcam / video device control
+$ v4l2-ctl [OPTIONS]
+- --list-devices ~~ Cameras
+- -d DEV --list-formats-ext ~~ Resolutions + fps
+- -l ~~ Controls
+- -c NAME=VALUE ~~ Set a control
+> v4l2-ctl --list-devices ~~ Which /dev/video
+
+@swaymsg ~~ Control Sway
+$ swaymsg [-t TYPE] [COMMAND]
+- reload ~~ Re-read config
+- -t get_outputs ~~ Monitors
+- -t get_tree ~~ Windows (JSON)
+- -t get_inputs ~~ Input devices
+- output NAME scale 1.5 ~~ Change now
+> swaymsg -t get_outputs ~~ Monitors
+
+@xfconf-query ~~ Read/change Xfce settings
+$ xfconf-query -c CHANNEL [-p PROPERTY] [-s VALUE]
+- -l ~~ List channels (or properties with -c)
+- -c CHANNEL ~~ Settings group
+- -p PROP ~~ Property path
+- -s VALUE ~~ Set
+- -m ~~ Monitor changes
+> xfconf-query -c xsettings -p /Net/ThemeName -s Adwaita-dark ~~ Theme
+
+@ansible-vault ~~ Encrypt secrets for Ansible
+$ ansible-vault COMMAND FILE
+- create / edit / view ~~ Work with a vault file
+- encrypt / decrypt ~~ Convert a plain file
+- encrypt_string ~~ Encrypt one value for YAML
+> ansible-vault create secrets.yml ~~ New encrypted file
+
+@kid3-cli ~~ Edit music tags
+$ kid3-cli -c "COMMAND" FILE...
+- get ~~ Show tags
+- set FRAME VALUE ~~ Set a tag
+- totag FORMAT 2 ~~ Tags from file name
+- fromtag FORMAT 2 ~~ Rename from tags
+> kid3-cli -c get song.mp3 ~~ Show
+
+@sox ~~ Swiss-army knife for audio
+$ sox INPUT [EFFECTS] OUTPUT
+- trim START LEN ~~ Cut
+- -r RATE ~~ Resample
+- remix - ~~ Mono
+- silence … ~~ Remove silence
+- spectrogram ~~ Picture of the frequencies
+> sox in.wav out.flac trim 0 30 ~~ First 30 s
+
+@qpdf ~~ Transform PDF files
+$ qpdf [OPTIONS] IN.pdf OUT.pdf
+- --pages FILE RANGE -- ~~ Select / merge pages
+- --rotate=+90:1-2 ~~ Rotate pages
+- --split-pages ~~ One file per page
+- --encrypt U O 256 -- ~~ Password
+- --decrypt --password=P ~~ Remove a known password
+> qpdf in.pdf --pages . 1-3 -- first3.pdf ~~ Pages 1-3
+
+@adb ~~ Android Debug Bridge
+$ adb COMMAND [ARGS]
+- devices ~~ Connected phones
+- pull PATH DEST ~~ Copy from phone (-a keeps dates)
+- push SRC PATH ~~ Copy to phone
+- shell "CMD" ~~ Run on the phone
+- install APP.apk ~~ Install an app
+- pair / connect IP:PORT ~~ Wireless debugging
+> adb pull -a /sdcard/DCIM/Camera ~/Phone/ ~~ Back up photos

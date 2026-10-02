@@ -1,0 +1,387 @@
+@ip ~~ Show and change network settings
+$ ip [OPTIONS] OBJECT COMMAND
+- a / addr ~~ IP addresses (ip -br a = brief)
+- link ~~ Interfaces: up/down, MTU, MAC
+- r / route ~~ Routing table
+- neigh ~~ ARP / neighbour cache
+- -br ~~ Brief, one line per interface
+- -c ~~ Colour
+- -4 / -6 ~~ IPv4 / IPv6 only
+- -s ~~ Statistics
+- route get IP ~~ Which route/interface reaches IP
+> ip -br a ~~ All interfaces + addresses
+> ip r ~~ Default gateway
+> ip route get 1.1.1.1 ~~ Which interface is used
+> sudo ip link set enp3s0 down ~~ Disable an interface (temporary)
+
+@ss ~~ Sockets: listening ports and connections
+$ ss [OPTIONS] [FILTER]
+- -t / -u ~~ TCP / UDP
+- -l ~~ Listening only
+- -n ~~ Numeric (no name lookups)
+- -p ~~ Show the process (needs sudo)
+- -a ~~ All sockets
+- -s ~~ Summary
+- state established ~~ Filter by state
+- sport = :22 ~~ Filter by port
+> sudo ss -tulpn ~~ What listens on which port
+> ss -tn state established ~~ Current connections
+> ss -s ~~ Totals
+
+@ping ~~ Test reachability and latency
+$ ping [OPTIONS] HOST
+- -c N ~~ Stop after N pings
+- -i SEC ~~ Interval
+- -4 / -6 ~~ Force IPv4 / IPv6
+- -s SIZE ~~ Packet size
+- -M do -s 1472 ~~ Find the MTU (don't fragment)
+- -W SEC ~~ Timeout per reply
+> ping -c 4 fedoraproject.org ~~ 4 pings
+> ping -c 3 192.168.1.1 ~~ Is the router reachable?
+
+@curl ~~ Transfer data with URLs
+$ curl [OPTIONS] URL
+- -O ~~ Save with the remote file name
+- -o FILE ~~ Save as FILE
+- -L ~~ Follow redirects
+- -I ~~ Headers only
+- -s / -S ~~ Silent / still show errors
+- -f ~~ Fail on HTTP errors (scripts)
+- -X METHOD ~~ POST, PUT, DELETE…
+- -H "K: V" ~~ Add a header
+- -d DATA ~~ Request body (implies POST)
+- -u USER:PASS ~~ Basic auth
+- -C - ~~ Resume a download
+- -w FORMAT ~~ Print timing/status, e.g. "%{http_code}"
+- --resolve HOST:PORT:IP ~~ Override DNS
+> curl -LO https://example.com/file.iso ~~ Download
+> curl -sI https://fedoraproject.org ~~ Response headers
+> curl -s https://api.example.com/items | jq . ~~ API + pretty JSON
+> curl -X POST -H "Content-Type: application/json" -d '{"a":1}' URL ~~ Send JSON
+
+@wget ~~ Download files
+$ wget [OPTIONS] URL
+- -c ~~ Continue a partial download
+- -O FILE ~~ Save as
+- -q ~~ Quiet
+- -r -np ~~ Recursive, don't go to the parent
+- --limit-rate=2m ~~ Bandwidth cap
+- -i FILE ~~ URLs from a file
+> wget -c https://example.com/big.iso ~~ Resumable download
+
+@dig ~~ DNS lookups
+$ dig [@SERVER] NAME [TYPE] [+OPTIONS]
+- +short ~~ Just the answer
+- A / AAAA / MX / TXT / NS ~~ Record type
+- @1.1.1.1 ~~ Ask a specific server
+- -x IP ~~ Reverse lookup
+- +trace ~~ Follow delegation from the root
+- +noall +answer ~~ Only the answer section
+> dig +short fedoraproject.org ~~ IP address
+> dig MX example.com +short ~~ Mail servers
+> dig @1.1.1.1 example.com ~~ Bypass local DNS
+> dig -x 8.8.8.8 +short ~~ Reverse
+
+@nmcli ~~ NetworkManager command line
+$ nmcli [OPTIONS] OBJECT COMMAND
+- general status ~~ Overall state
+- device ~~ Interfaces (status, wifi list, connect)
+- connection / con ~~ Saved profiles (show, up, down, mod, add)
+- radio wifi on|off ~~ Wi-Fi switch
+- dev wifi list ~~ Nearby networks
+- dev wifi connect SSID password PW ~~ Join Wi-Fi
+- con mod NAME ipv4.method manual ~~ Static IP (with ipv4.addresses…)
+- -t / -f FIELDS ~~ Terse / choose fields (scripts)
+> nmcli dev status ~~ Interfaces
+> nmcli dev wifi list ~~ Wi-Fi networks
+> nmcli dev wifi connect "Home" password "secret" ~~ Connect
+> nmcli con show --active ~~ Active connections
+
+@resolvectl ~~ DNS resolver status (systemd-resolved)
+$ resolvectl [COMMAND]
+- status ~~ DNS servers per interface
+- query NAME ~~ Resolve through resolved
+- flush-caches ~~ Clear the DNS cache
+- statistics ~~ Cache hits/misses
+- dns IFACE IP ~~ Set DNS for an interface (temporary)
+> resolvectl status ~~ Which DNS is used
+> resolvectl flush-caches ~~ After changing records
+
+@tracepath ~~ Trace the network path (no root needed)
+$ tracepath [OPTIONS] HOST
+- -n ~~ No name lookups
+- -b ~~ Both names and IPs
+> tracepath -n fedoraproject.org ~~ Hops + MTU
+
+@nc ~~ Netcat: raw TCP/UDP connections
+$ nc [OPTIONS] HOST PORT
+- -z ~~ Just test if the port is open
+- -v ~~ Verbose
+- -l ~~ Listen
+- -u ~~ UDP
+- -w SEC ~~ Timeout
+> nc -zv server 22 ~~ Is SSH reachable?
+> nc -l 9000 > file ~~ Receive a file (other side: nc host 9000 < file)
+
+@nmap ~~ Network scanner
+$ nmap [SCAN TYPE] [OPTIONS] TARGET
+- -sn ~~ Ping scan: which hosts are up
+- -p PORTS ~~ e.g. -p 22,80,443 or -p-
+- -sV ~~ Detect service versions
+- -O ~~ Guess the OS (root)
+- -F ~~ Fast: top 100 ports
+- --open ~~ Only open ports
+> nmap -sn 192.168.1.0/24 ~~ Devices on your LAN
+> nmap -F --open server ~~ Open common ports
+> sudo nmap -sV -p 22,80,443 server ~~ What runs there
+
+@tcpdump ~~ Capture network packets
+$ sudo tcpdump [OPTIONS] [FILTER]
+- -i IFACE ~~ Interface (any = all)
+- -n ~~ No name lookups
+- -c N ~~ Stop after N packets
+- -w FILE ~~ Save for Wireshark
+- -A ~~ Print payload as ASCII
+- port 53 / host IP ~~ Filters
+> sudo tcpdump -i any -n port 53 ~~ Watch DNS queries
+> sudo tcpdump -i enp3s0 -w cap.pcap ~~ Save to open in Wireshark
+
+@ethtool ~~ Ethernet card settings
+$ ethtool [OPTIONS] IFACE
+- (no options) ~~ Speed, duplex, link
+- -i ~~ Driver + firmware
+- -S ~~ Statistics/errors
+- -s IFACE wol g ~~ Enable Wake-on-LAN
+> ethtool enp3s0 | grep -E "Speed|Link" ~~ Link speed
+
+@iperf3 ~~ Measure network throughput
+$ iperf3 -s | -c SERVER [OPTIONS]
+- -s ~~ Server mode
+- -c HOST ~~ Client: connect to the server
+- -R ~~ Reverse (server sends)
+- -t SEC ~~ Duration
+- -P N ~~ Parallel streams
+> iperf3 -s ~~ On one machine
+> iperf3 -c 192.168.1.10 ~~ On the other
+
+@ssh ~~ Secure shell to another machine
+$ ssh [OPTIONS] [USER@]HOST [COMMAND]
+- -p PORT ~~ Port
+- -i KEY ~~ Identity file
+- -J HOST ~~ Jump through a bastion
+- -L L:host:R ~~ Local port forward
+- -R R:host:L ~~ Remote port forward
+- -D PORT ~~ SOCKS proxy
+- -N ~~ No command (forwarding only)
+- -t ~~ Force a terminal
+- -v ~~ Debug connection problems
+- -o Key=Value ~~ Any config option
+> ssh user@server ~~ Connect
+> ssh -p 2222 user@server ~~ Custom port
+> ssh -L 8080:localhost:80 server ~~ Reach the server's port 80 on localhost:8080
+> ssh server 'df -h' ~~ Run one command
+
+@ssh-keygen ~~ Create and manage SSH keys
+$ ssh-keygen [OPTIONS]
+- -t ed25519 ~~ Key type (recommended)
+- -C "comment" ~~ Label (e.g. email)
+- -f FILE ~~ Output file
+- -p ~~ Change a key's passphrase
+- -l -f KEY ~~ Show fingerprint
+- -R HOST ~~ Remove a host from known_hosts
+- -t ed25519-sk ~~ Hardware key (YubiKey)
+> ssh-keygen -t ed25519 -C "sooraj@laptop" ~~ New key
+> ssh-keygen -R server ~~ Fix "host key changed" after reinstall
+
+@ssh-copy-id ~~ Install your public key on a server
+$ ssh-copy-id [-i KEY] [-p PORT] USER@HOST
+- -i KEY.pub ~~ Which key
+- -p PORT ~~ SSH port
+> ssh-copy-id user@server ~~ Password-less login from now on
+
+@ssh-add ~~ Add keys to the SSH agent
+$ ssh-add [OPTIONS] [KEY]
+- -l ~~ List loaded keys
+- -D ~~ Remove all
+- -t 1h ~~ Expire after a time
+> ssh-add ~/.ssh/id_ed25519 ~~ Enter the passphrase once
+
+@firewall-cmd ~~ Configure firewalld
+$ firewall-cmd [OPTIONS]
+- --state ~~ Running?
+- --get-active-zones ~~ Zones + interfaces
+- --list-all ~~ Everything allowed in the default zone
+- --add-service=NAME ~~ Allow a service (http, ssh, samba…)
+- --add-port=8080/tcp ~~ Allow a port
+- --remove-service / --remove-port ~~ Close again
+- --permanent ~~ Save (then --reload)
+- --reload ~~ Apply permanent rules
+- --zone=NAME ~~ Act on another zone
+- --add-rich-rule='…' ~~ Advanced rules (per-source)
+- --add-forward-port=… ~~ Port forwarding
+- --add-masquerade ~~ NAT (routers, VPN servers)
+- --get-services ~~ All known service names
+> sudo firewall-cmd --list-all ~~ What is open
+> sudo firewall-cmd --add-service=http --permanent && sudo firewall-cmd --reload ~~ Open HTTP
+> sudo firewall-cmd --add-port=8080/tcp ~~ Open until reload
+> sudo firewall-cmd --zone=trusted --add-source=192.168.1.0/24 --permanent ~~ Trust your LAN
+
+@wg ~~ WireGuard VPN tool
+$ wg [COMMAND]
+- show ~~ Interfaces, peers, handshakes
+- genkey ~~ New private key
+- pubkey ~~ Public key from a private key (stdin)
+- genpsk ~~ Pre-shared key
+- set IFACE peer KEY … ~~ Change live
+> sudo wg show ~~ Status
+> wg genkey | tee priv | wg pubkey > pub ~~ Key pair
+
+@openssl ~~ TLS, certificates and crypto toolkit
+$ openssl COMMAND [OPTIONS]
+- s_client -connect HOST:443 ~~ Test a TLS server
+- x509 -in CERT -noout -text ~~ Read a certificate
+- x509 -noout -dates ~~ Validity dates
+- req -x509 -newkey … ~~ Self-signed certificate
+- rand -base64 32 ~~ Random secret
+- enc / dgst ~~ Encrypt / hash
+> echo | openssl s_client -connect example.com:443 2>/dev/null | openssl x509 -noout -dates ~~ When does the cert expire?
+> openssl rand -base64 32 ~~ Strong random password
+> openssl req -x509 -newkey rsa:4096 -nodes -keyout key.pem -out cert.pem -days 365 -subj "/CN=localhost" ~~ Self-signed cert
+
+@semanage ~~ Manage SELinux policy settings
+$ sudo semanage OBJECT [OPTIONS]
+- port -l ~~ Allowed ports per type
+- port -a -t TYPE -p tcp PORT ~~ Allow a service on another port
+- fcontext -l ~~ File label rules
+- fcontext -a -t TYPE "PATH(/.*)?" ~~ Add a label rule (then restorecon)
+- boolean -l ~~ All booleans + descriptions
+- login -l ~~ SELinux user mapping
+> sudo semanage port -a -t ssh_port_t -p tcp 2222 ~~ SSH on port 2222
+> sudo semanage fcontext -a -t httpd_sys_content_t "/srv/www(/.*)?" && sudo restorecon -Rv /srv/www ~~ Web content folder
+
+@restorecon ~~ Reset SELinux labels to the policy defaults
+$ sudo restorecon [OPTIONS] PATH...
+- -R ~~ Recursive
+- -v ~~ Show what changed
+- -n ~~ Dry run
+- -F ~~ Force full context reset
+> sudo restorecon -Rv /var/www ~~ Fix labels after moving files
+
+@setsebool ~~ Turn SELinux booleans on/off
+$ sudo setsebool [-P] BOOLEAN on|off
+- -P ~~ Permanent
+> sudo setsebool -P httpd_can_network_connect on ~~ Let nginx reach backends
+> getsebool -a | grep httpd ~~ (see getsebool) list related booleans
+
+@getsebool ~~ Show SELinux booleans
+$ getsebool [-a] [BOOLEAN]
+- -a ~~ All booleans
+> getsebool -a | grep samba ~~ Samba switches
+
+@setenforce ~~ Switch SELinux mode (until reboot)
+$ sudo setenforce 0|1
+- 0 ~~ Permissive (log only) — for testing
+- 1 ~~ Enforcing
+> getenforce ~~ Current mode
+> sudo setenforce 0 ~~ Test whether SELinux is the cause, then turn it back on!
+
+@ausearch ~~ Search the audit log
+$ sudo ausearch [OPTIONS]
+- -m avc ~~ SELinux denials
+- -ts recent|today|boot ~~ Time range
+- -c COMM ~~ By program name
+- -i ~~ Interpret numbers as names
+- --raw | audit2allow ~~ Feed into policy generator
+> sudo ausearch -m avc -ts recent ~~ Recent SELinux denials
+> sudo ausearch -m avc -c httpd -i ~~ For one program
+
+@sealert ~~ Explain SELinux denials in plain language
+$ sudo sealert -a /var/log/audit/audit.log
+- -a FILE ~~ Analyse a log
+- -l ID ~~ One alert by ID
+> sudo sealert -a /var/log/audit/audit.log | less ~~ Suggestions for every denial
+
+@setfacl ~~ Set file access control lists (ACLs)
+$ setfacl [OPTIONS] ACL FILE...
+- -m u:USER:rwx ~~ Add/modify a user entry
+- -m g:GROUP:rx ~~ Group entry
+- -x u:USER ~~ Remove an entry
+- -b ~~ Remove all ACLs
+- -R ~~ Recursive
+- -d ~~ Default ACL for new files in a dir
+> setfacl -m u:aisha:rw report.pdf ~~ Give one user access
+> setfacl -R -d -m g:team:rwX /srv/shared ~~ Team gets access to new files
+
+@getfacl ~~ Show ACLs
+$ getfacl [OPTIONS] FILE...
+- -R ~~ Recursive
+> getfacl report.pdf ~~ Who has access
+
+@gpg ~~ GnuPG encryption and signing
+$ gpg [OPTIONS] [FILE]
+- -c ~~ Encrypt with a passphrase
+- -e -r USER ~~ Encrypt for someone's public key
+- -d ~~ Decrypt
+- --sign / --verify ~~ Signatures
+- --full-generate-key ~~ New key pair
+- --list-keys / -K ~~ Public / secret keys
+- --import / --export -a ~~ Share keys
+> gpg -c secret.txt ~~ Encrypt with a password
+> gpg -d secret.txt.gpg > secret.txt ~~ Decrypt
+> gpg --verify file.sig file ~~ Check a signature
+
+@age ~~ Simple modern file encryption
+$ age [-r RECIPIENT | -p] [-o OUT] [FILE]
+$ age -d [-i KEY] [FILE]
+- -p ~~ Encrypt with a passphrase
+- -r age1… ~~ Encrypt to a public key
+- -R FILE ~~ Recipients from a file (also SSH keys)
+- -d ~~ Decrypt
+- -i KEY ~~ Identity (private key) for decryption
+- -a ~~ ASCII armour
+> age-keygen -o key.txt ~~ Make a key pair
+> age -p -o secret.age secret.txt ~~ Passphrase
+> age -d -i key.txt secret.age > secret.txt ~~ Decrypt
+
+@cryptsetup ~~ LUKS disk encryption
+$ sudo cryptsetup ACTION [OPTIONS] DEVICE [NAME]
+- luksFormat DEV ~~ Encrypt a partition (erases!)
+- open DEV NAME ~~ Unlock → /dev/mapper/NAME
+- close NAME ~~ Lock
+- status NAME ~~ Info about an open device
+- luksDump DEV ~~ Header + key slots
+- luksAddKey / luksRemoveKey ~~ Manage passphrases
+- luksHeaderBackup ~~ Back up the header (do it!)
+> sudo cryptsetup open /dev/sdb1 usb ~~ Unlock
+> sudo cryptsetup luksDump /dev/nvme0n1p3 ~~ Key slots
+
+@update-crypto-policies ~~ System-wide crypto policy
+$ sudo update-crypto-policies [--show | --set POLICY]
+- --show ~~ Current policy
+- --set DEFAULT|LEGACY|FUTURE|FIPS ~~ Change (reboot)
+- DEFAULT:SHA1 ~~ Sub-policy to re-enable SHA1 temporarily
+> update-crypto-policies --show ~~ Current
+
+@authselect ~~ Login / PAM profile management
+$ sudo authselect COMMAND
+- current ~~ Active profile + features
+- enable-feature NAME ~~ e.g. with-fingerprint, with-faillock
+- disable-feature NAME ~~ Turn off
+- list-features PROFILE ~~ What is available
+> authselect current ~~ Show
+> sudo authselect enable-feature with-fingerprint ~~ Fingerprint login
+
+@fail2ban-client ~~ Control fail2ban
+$ sudo fail2ban-client COMMAND
+- status ~~ Jails
+- status sshd ~~ Banned IPs in one jail
+- set sshd unbanip IP ~~ Unban
+- reload ~~ Re-read config
+> sudo fail2ban-client status sshd ~~ Who is banned
+
+@visudo ~~ Safely edit sudoers
+$ sudo visudo [-f FILE] [-c]
+- -f FILE ~~ Edit a drop-in in /etc/sudoers.d
+- -c ~~ Check syntax only
+> sudo visudo -f /etc/sudoers.d/admins ~~ Edit a drop-in
+> sudo visudo -c ~~ Validate

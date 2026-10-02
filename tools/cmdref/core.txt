@@ -1,0 +1,607 @@
+@ls ~~ List directory contents
+$ ls [OPTION]... [FILE]...
+- -l ~~ Long format: permissions, owner, size, date
+- -a ~~ Show hidden files (starting with .)
+- -A ~~ Hidden files, but not . and ..
+- -h ~~ Human-readable sizes (K, M, G) with -l
+- -t ~~ Sort by modification time, newest first
+- -S ~~ Sort by size, largest first
+- -r ~~ Reverse the sort order
+- -R ~~ List subdirectories recursively
+- -d ~~ List the directory itself, not its contents
+- -1 ~~ One entry per line
+- -i ~~ Show inode numbers
+- -Z ~~ Show SELinux security context
+- --color=auto ~~ Colour by file type
+- --group-directories-first ~~ Folders before files
+> ls -lah ~~ Everything, long format, human sizes
+> ls -lt | head ~~ 10 most recently changed
+> ls -lS --block-size=M ~~ Biggest files first, in MB
+> ls -d */ ~~ Only directories
+> ls -Z /var/www ~~ SELinux labels
+
+@cd ~~ Change the current directory
+$ cd [DIR]
+- (no args) ~~ Go to your home directory
+- - ~~ Go back to the previous directory
+- .. ~~ Parent directory
+- ~user ~~ Another user's home
+- -P ~~ Resolve symlinks to the real path
+> cd ~/Downloads ~~ Into Downloads
+> cd - ~~ Toggle back
+> cd ../.. ~~ Up two levels
+
+@pwd ~~ Print the current directory
+$ pwd [-L|-P]
+- -L ~~ Logical path (keeps symlinks, default)
+- -P ~~ Physical path (symlinks resolved)
+> pwd ~~ Where am I?
+
+@cp ~~ Copy files and directories
+$ cp [OPTION]... SOURCE DEST
+$ cp [OPTION]... SOURCE... DIRECTORY
+- -r ~~ Copy directories recursively
+- -a ~~ Archive: recursive + keep permissions, times, links
+- -i ~~ Ask before overwriting
+- -n ~~ Never overwrite
+- -u ~~ Copy only when source is newer
+- -v ~~ Verbose: show each file
+- -p ~~ Preserve mode, owner, timestamps
+- -l ~~ Hard-link instead of copying
+- --reflink=auto ~~ Instant copy-on-write clone (Btrfs, XFS)
+- -t DIR ~~ Target directory first (good with xargs)
+> cp file.txt backup.txt ~~ Simple copy
+> cp -a ~/Documents /run/media/$USER/USB/ ~~ Copy a folder, keep everything
+> cp -iv *.jpg ~/Pictures/ ~~ Ask before overwriting, show progress
+> cp --reflink=auto big.iso copy.iso ~~ Instant copy on Btrfs
+
+@mv ~~ Move or rename files
+$ mv [OPTION]... SOURCE DEST
+$ mv [OPTION]... SOURCE... DIRECTORY
+- -i ~~ Ask before overwriting
+- -n ~~ Never overwrite
+- -u ~~ Move only when source is newer
+- -v ~~ Show what is moved
+- -b ~~ Back up files that would be overwritten
+- -t DIR ~~ Target directory first
+> mv old.txt new.txt ~~ Rename
+> mv -i *.pdf ~/Documents/ ~~ Move, ask before overwriting
+> mv -v report{,.bak} ~~ report → report.bak (brace expansion)
+
+@rm ~~ Remove files or directories
+$ rm [OPTION]... FILE...
+- -r ~~ Remove directories and their contents
+- -f ~~ Force: no prompts, ignore missing files
+- -i ~~ Ask before every removal
+- -I ~~ Ask once before removing more than 3 files
+- -v ~~ Show each removed file
+- -d ~~ Remove empty directories
+- --one-file-system ~~ Don't cross into other mounted filesystems
+> rm file.txt ~~ Delete a file
+> rm -ri old-project/ ~~ Delete a folder, confirming each file
+> rm -rf build/ ~~ Delete a folder, no questions (careful!)
+> find . -name "*.tmp" -delete ~~ Safer bulk delete by pattern
+
+@mkdir ~~ Create directories
+$ mkdir [OPTION]... DIRECTORY...
+- -p ~~ Create parents as needed, no error if exists
+- -m MODE ~~ Set permissions, e.g. -m 700
+- -v ~~ Print each created directory
+> mkdir -p projects/app/{src,tests,docs} ~~ Whole tree at once
+> mkdir -m 700 ~/private ~~ Private folder
+
+@rmdir ~~ Remove empty directories
+$ rmdir [OPTION]... DIRECTORY...
+- -p ~~ Also remove empty parent directories
+- -v ~~ Show each removed directory
+> rmdir empty-folder ~~ Only works if empty
+> find . -type d -empty -delete ~~ All empty folders below here
+
+@touch ~~ Create empty files or update timestamps
+$ touch [OPTION]... FILE...
+- -c ~~ Don't create missing files
+- -a ~~ Change access time only
+- -m ~~ Change modification time only
+- -d STRING ~~ Use this date, e.g. -d "2026-01-01 10:00"
+- -r FILE ~~ Copy timestamps from FILE
+> touch notes.txt ~~ Create an empty file
+> touch -d "yesterday" file ~~ Backdate a file
+> touch -r original copy ~~ Same timestamp as another file
+
+@cat ~~ Print or join files
+$ cat [OPTION]... [FILE]...
+- -n ~~ Number all lines
+- -b ~~ Number non-empty lines
+- -A ~~ Show tabs (^I), line ends ($) and hidden characters
+- -s ~~ Squeeze repeated blank lines
+> cat /etc/os-release ~~ Show a file
+> cat part1 part2 > whole ~~ Join files
+> cat -A script.sh | head ~~ Find stray tabs / Windows line endings
+> cat <<'EOF' > file.txt ~~ Write several lines (here-doc)
+
+@less ~~ View text page by page
+$ less [OPTION]... [FILE]...
+- -N ~~ Show line numbers
+- -S ~~ Don't wrap long lines (scroll sideways)
+- -R ~~ Show colours (ANSI escape codes)
+- -i ~~ Case-insensitive search
+- +F ~~ Follow the file like tail -f (Ctrl-C to stop)
+- /text ~~ (inside) search forward; n = next, N = previous
+- g / G ~~ (inside) go to start / end
+- q ~~ (inside) quit
+> less /var/log/dnf5.log ~~ Read a log
+> journalctl -b | less -S ~~ Wide output without wrapping
+> less +F app.log ~~ Follow a growing file
+
+@head ~~ First lines of a file
+$ head [OPTION]... [FILE]...
+- -n N ~~ First N lines (default 10)
+- -n -N ~~ Everything except the last N lines
+- -c N ~~ First N bytes
+- -q ~~ No file name headers
+> head -n 20 file.log ~~ First 20 lines
+> head -c 1M /dev/urandom > test.bin ~~ 1 MB random file
+
+@tail ~~ Last lines of a file
+$ tail [OPTION]... [FILE]...
+- -n N ~~ Last N lines (default 10)
+- -n +N ~~ From line N to the end
+- -f ~~ Follow: keep printing new lines
+- -F ~~ Follow even if the file is rotated/recreated
+- --pid=PID ~~ Stop following when PID exits
+- -c N ~~ Last N bytes
+> tail -n 50 /var/log/nginx/error.log ~~ Last 50 lines
+> tail -F /var/log/app.log ~~ Watch a log live
+> tail -n +2 data.csv ~~ Skip the CSV header
+
+@ln ~~ Create links
+$ ln [OPTION]... TARGET LINK_NAME
+- -s ~~ Symbolic (soft) link
+- -f ~~ Replace an existing link
+- -n ~~ Treat LINK_NAME as a file even if it is a symlink to a dir
+- -r ~~ Make a relative symlink
+- -v ~~ Show what is linked
+> ln -s ~/Apps/tool/tool ~/.local/bin/tool ~~ Put a program on your PATH
+> ln -sfn /srv/releases/v2 /srv/current ~~ Switch a "current" link atomically
+> ln file hardlink ~~ Hard link (same inode)
+
+@find ~~ Search for files in a directory tree
+$ find [PATH...] [TESTS] [ACTIONS]
+- -name PATTERN ~~ File name matches (quote wildcards!)
+- -iname PATTERN ~~ Case-insensitive name
+- -type f|d|l ~~ Files / directories / symlinks
+- -size +100M ~~ Larger than 100 MB (-size -1k smaller)
+- -mtime -7 ~~ Modified in the last 7 days (+30 = older)
+- -mmin -60 ~~ Modified in the last 60 minutes
+- -newer FILE ~~ Newer than FILE
+- -user NAME ~~ Owned by user
+- -perm -4000 ~~ Has the setuid bit
+- -empty ~~ Empty files or directories
+- -maxdepth N ~~ Don't go deeper than N levels
+- -not / ! ~~ Negate the next test
+- -exec CMD {} + ~~ Run a command on the results
+- -delete ~~ Delete matches (put it last!)
+- -print0 ~~ NUL-separated output for xargs -0
+> find ~ -name "*.pdf" ~~ All PDFs in your home
+> find / -xdev -size +1G 2>/dev/null ~~ Files over 1 GB on this filesystem
+> find . -type f -mtime -1 ~~ Changed in the last day
+> find . -name "*.log" -mtime +30 -delete ~~ Delete logs older than 30 days
+> find . -type f -exec chmod 644 {} + ~~ Fix file permissions in bulk
+
+@grep ~~ Search text for patterns
+$ grep [OPTION]... PATTERN [FILE]...
+- -i ~~ Ignore case
+- -r ~~ Search folders recursively
+- -n ~~ Show line numbers
+- -v ~~ Invert: lines that do NOT match
+- -w ~~ Whole words only
+- -l ~~ Only file names that match
+- -c ~~ Count matching lines
+- -E ~~ Extended regex (a|b, +, ?)
+- -F ~~ Fixed string, no regex
+- -o ~~ Print only the matched part
+- -A N / -B N / -C N ~~ N lines after / before / around matches
+- --include=GLOB ~~ Only search matching files
+- --exclude-dir=DIR ~~ Skip folders
+- -q ~~ Quiet: just the exit status (scripts)
+> grep -rn "TODO" src/ ~~ Every TODO with line numbers
+> grep -i error /var/log/messages ~~ Case-insensitive
+> grep -E "fail|error" app.log ~~ Either word
+> ps aux | grep -v grep | grep nginx ~~ Filter command output
+> grep -rl --include="*.conf" "Listen" /etc ~~ Which config files mention it
+
+@sed ~~ Stream editor: find/replace and edit text
+$ sed [OPTION]... 'SCRIPT' [FILE]...
+- -i ~~ Edit the file in place
+- -i.bak ~~ In place, keep a .bak copy
+- -n ~~ Print only lines you ask for (with p)
+- -E ~~ Extended regex
+- s/old/new/g ~~ Replace all matches on each line
+- Nd ~~ Delete line N (e.g. 1d)
+- /re/d ~~ Delete lines matching re
+- N,Mp ~~ Print lines N to M (with -n)
+> sed -i 's/foo/bar/g' file.txt ~~ Replace everywhere in a file
+> sed -n '10,20p' big.log ~~ Show lines 10-20
+> sed -i '/^#/d' config ~~ Delete comment lines
+> sed -i.bak 's/^SELINUX=.*/SELINUX=enforcing/' /etc/selinux/config ~~ Change a setting, keep a backup
+
+@awk ~~ Pattern scanning and column processing
+$ awk [-F SEP] 'PROGRAM' [FILE]...
+- -F SEP ~~ Field separator (default: spaces/tabs)
+- $1, $2 … ~~ Fields (columns); $0 = whole line
+- NR ~~ Current line number
+- NF ~~ Number of fields; $NF = last field
+- BEGIN{} / END{} ~~ Run before / after all lines
+- -v var=value ~~ Pass a variable in
+> awk '{print $1}' access.log ~~ First column
+> awk -F: '{print $1, $7}' /etc/passwd ~~ Users and their shells
+> awk '$3 > 100' data.txt ~~ Rows where column 3 > 100
+> awk '{sum += $2} END {print sum}' sales.txt ~~ Total of a column
+> df -h | awk 'NR>1 && $5+0 > 80' ~~ Filesystems over 80% full
+
+@sort ~~ Sort lines
+$ sort [OPTION]... [FILE]...
+- -n ~~ Numeric sort
+- -h ~~ Human sizes (2K, 1G) — use with du -h
+- -r ~~ Reverse
+- -k N ~~ Sort by column N
+- -t SEP ~~ Column separator
+- -u ~~ Unique lines only
+- -V ~~ Version numbers (1.9 < 1.10)
+- -R ~~ Random shuffle
+> sort names.txt ~~ Alphabetical
+> du -sh * | sort -h ~~ Folders by size
+> sort -t, -k3 -n data.csv ~~ By 3rd CSV column, numerically
+> sort -u list.txt ~~ Sorted, duplicates removed
+
+@uniq ~~ Collapse duplicate adjacent lines
+$ uniq [OPTION]... [INPUT [OUTPUT]]
+- -c ~~ Prefix each line with its count
+- -d ~~ Only duplicated lines
+- -u ~~ Only unique lines
+- -i ~~ Ignore case
+> sort access.log | uniq -c | sort -rn | head ~~ Most frequent lines
+> sort list | uniq -d ~~ Show duplicates
+
+@wc ~~ Count lines, words and bytes
+$ wc [OPTION]... [FILE]...
+- -l ~~ Lines
+- -w ~~ Words
+- -c ~~ Bytes
+- -m ~~ Characters
+- -L ~~ Length of the longest line
+> wc -l file.txt ~~ Number of lines
+> ls | wc -l ~~ Number of entries in a folder
+
+@cut ~~ Cut columns out of lines
+$ cut OPTION... [FILE]...
+- -d SEP ~~ Field delimiter (default tab)
+- -f LIST ~~ Fields, e.g. -f1,3 or -f2-
+- -c LIST ~~ Character positions, e.g. -c1-8
+> cut -d: -f1 /etc/passwd ~~ All user names
+> cut -d, -f2,4 data.csv ~~ CSV columns 2 and 4
+
+@tr ~~ Translate or delete characters
+$ tr [OPTION]... SET1 [SET2]
+- -d ~~ Delete characters in SET1
+- -s ~~ Squeeze repeats into one
+- -c ~~ Use the complement of SET1
+> echo hello | tr a-z A-Z ~~ Upper-case
+> tr -d '\r' < win.txt > unix.txt ~~ Remove Windows line endings
+> tr -s ' ' < file ~~ Collapse multiple spaces
+
+@diff ~~ Compare files line by line
+$ diff [OPTION]... FILE1 FILE2
+- -u ~~ Unified format (like git diff)
+- -r ~~ Compare directories recursively
+- -q ~~ Only say whether files differ
+- -i ~~ Ignore case
+- -w ~~ Ignore all whitespace
+- -y ~~ Side by side
+- --color ~~ Coloured output
+> diff -u old.conf new.conf ~~ Readable differences
+> diff -rq dir1 dir2 ~~ Which files differ between folders
+> diff <(sort a.txt) <(sort b.txt) ~~ Compare command outputs
+
+@tar ~~ Create and extract archives
+$ tar -c[z|J|--zstd]f ARCHIVE FILES...
+$ tar -xf ARCHIVE [-C DIR]
+- -c ~~ Create an archive
+- -x ~~ Extract
+- -t ~~ List contents
+- -f FILE ~~ Archive file name (always needed)
+- -v ~~ Verbose
+- -z ~~ gzip (.tar.gz)
+- -J ~~ xz (.tar.xz)
+- --zstd ~~ zstd (.tar.zst) — fast and small
+- -C DIR ~~ Extract into / change to DIR
+- --exclude=PATTERN ~~ Skip files
+- -p ~~ Keep permissions
+- --strip-components=N ~~ Drop N leading folders when extracting
+> tar -czf backup.tar.gz ~/Documents ~~ Create a .tar.gz
+> tar -xf archive.tar.xz ~~ Extract (type auto-detected)
+> tar -tf archive.tar.gz | head ~~ Peek inside
+> tar -xf app.tar.gz -C /opt ~~ Extract somewhere else
+> tar --zstd -cf home.tar.zst --exclude=.cache ~ ~~ zstd, skip caches
+
+@zip ~~ Create .zip archives
+$ zip [OPTION]... ARCHIVE.zip FILE...
+- -r ~~ Include folders recursively
+- -e ~~ Encrypt (weak; prefer 7z or age)
+- -9 ~~ Best compression
+- -x PATTERN ~~ Exclude files
+- -u ~~ Update changed files only
+> zip -r project.zip project/ -x "*/node_modules/*" ~~ Zip a folder, skip node_modules
+
+@unzip ~~ Extract .zip archives
+$ unzip [OPTION]... ARCHIVE.zip [FILE]... [-d DIR]
+- -l ~~ List contents
+- -d DIR ~~ Extract into DIR
+- -o ~~ Overwrite without asking
+- -q ~~ Quiet
+> unzip -l file.zip ~~ What is inside
+> unzip file.zip -d out/ ~~ Extract into a folder
+
+@7z ~~ 7-Zip archiver (7z, zip, rar…)
+$ 7z COMMAND [SWITCHES] ARCHIVE [FILES]
+- a ~~ Add files (create archive)
+- x ~~ Extract with full paths
+- e ~~ Extract flat (no folders)
+- l ~~ List contents
+- t ~~ Test integrity
+- -p ~~ Password (prompts if empty)
+- -mhe=on ~~ Also encrypt file names (7z format)
+- -mx=9 ~~ Maximum compression
+- -o DIR ~~ Output folder (no space: -o/tmp/out)
+> 7z a -p -mhe=on secret.7z docs/ ~~ Encrypted archive
+> 7z x file.rar -oout/ ~~ Extract a RAR
+
+@zstd ~~ Fast modern compression
+$ zstd [OPTION]... [FILE]...
+- -d ~~ Decompress
+- -N ~~ Level 1 (fast) … 19 (small)
+- -T0 ~~ Use all CPU cores
+- --rm ~~ Remove the original after success
+- -c ~~ Write to stdout
+- -l ~~ Show info about a .zst file
+> zstd -T0 -10 big.log ~~ Compress (makes big.log.zst)
+> zstd -d file.zst ~~ Decompress
+> tar -cf - dir | zstd -T0 > dir.tar.zst ~~ In a pipeline
+
+@chmod ~~ Change file permissions
+$ chmod [OPTION]... MODE FILE...
+- u g o a ~~ User (owner), group, others, all
+- + - = ~~ Add, remove, set exactly
+- r w x ~~ Read, write, execute
+- 755 ~~ rwxr-xr-x (programs, folders)
+- 644 ~~ rw-r--r-- (normal files)
+- 600 ~~ rw------- (private files, keys)
+- -R ~~ Recursive
+- --reference=FILE ~~ Copy permissions from FILE
+> chmod +x script.sh ~~ Make executable
+> chmod 600 ~/.ssh/id_ed25519 ~~ Private key permissions
+> chmod -R u+rwX,go-rwx ~/private ~~ Owner only (X = dirs executable)
+> chmod g+s /srv/shared ~~ New files inherit the group
+
+@chown ~~ Change file owner and group
+$ chown [OPTION]... [OWNER][:GROUP] FILE...
+- -R ~~ Recursive
+- OWNER: ~~ Owner and their login group
+- :GROUP ~~ Group only
+- --reference=FILE ~~ Copy ownership from FILE
+- -h ~~ Change the symlink itself
+> sudo chown -R $USER: ~/project ~~ Take ownership back
+> sudo chown nginx:nginx /var/www/app ~~ Owner + group
+
+@chattr ~~ Change special file attributes
+$ chattr [-R] [+-=]ATTRS FILE...
+- +i ~~ Immutable: can't be changed or deleted (even by root)
+- -i ~~ Remove immutable
+- +a ~~ Append only
+- +C ~~ No copy-on-write (Btrfs; for VM images, databases)
+- -R ~~ Recursive
+> sudo chattr +i /etc/resolv.conf ~~ Lock a file
+> lsattr /etc/resolv.conf ~~ Show attributes
+> chattr +C ~/VMs ~~ No CoW for new files in a Btrfs folder
+
+@stat ~~ Detailed file information
+$ stat [OPTION]... FILE...
+- -c FORMAT ~~ Custom output, e.g. -c '%U %a %s'
+- -f ~~ Filesystem info instead of file
+- -L ~~ Follow symlinks
+- %a / %U / %s / %y ~~ Octal perms / owner / size / modified time
+> stat file.txt ~~ Everything about a file
+> stat -c '%a %U:%G %n' * ~~ Permissions and owner of each file
+
+@du ~~ Disk usage of files and folders
+$ du [OPTION]... [FILE]...
+- -s ~~ Summary: one total per argument
+- -h ~~ Human sizes
+- -c ~~ Grand total
+- -d N ~~ Max depth N
+- -x ~~ Stay on one filesystem
+- --apparent-size ~~ Logical size, not blocks used
+- --exclude=PATTERN ~~ Skip
+> du -sh * | sort -h ~~ What is big here
+> du -h -d1 ~ | sort -h | tail ~~ Biggest folders in home
+> sudo du -xh -d1 / | sort -h ~~ Root filesystem only
+
+@df ~~ Free space per filesystem
+$ df [OPTION]... [FILE]...
+- -h ~~ Human sizes
+- -T ~~ Show filesystem type
+- -i ~~ Inodes instead of blocks
+- -x TYPE ~~ Exclude a type (e.g. -x tmpfs)
+- --output=… ~~ Choose columns
+> df -h ~~ All filesystems
+> df -hT / /home ~~ Specific mounts with type
+> df -h -x tmpfs -x devtmpfs ~~ Hide RAM filesystems
+
+@file ~~ Detect a file's real type
+$ file [OPTION]... FILE...
+- -i ~~ MIME type
+- -b ~~ Brief (no file name)
+- -L ~~ Follow symlinks
+- -z ~~ Look inside compressed files
+> file photo.heic ~~ What is this really?
+> file -i *.txt ~~ Encoding/MIME of text files
+
+@xargs ~~ Build command lines from input
+$ COMMAND | xargs [OPTION]... [CMD [ARGS]]
+- -0 ~~ Input is NUL-separated (with find -print0)
+- -n N ~~ At most N arguments per command
+- -I {} ~~ Replace {} with each input item
+- -P N ~~ Run N in parallel
+- -a FILE ~~ Read items from FILE
+- -r ~~ Do nothing if input is empty
+- -p ~~ Ask before each run
+> find . -name "*.png" -print0 | xargs -0 optipng ~~ Safe with spaces
+> cat urls.txt | xargs -n1 -P4 curl -O ~~ 4 downloads at once
+> ls *.txt | xargs -I {} cp {} backup/ ~~ Placeholder style
+
+@tee ~~ Write input to a file and the screen
+$ COMMAND | tee [OPTION]... FILE...
+- -a ~~ Append instead of overwrite
+- -p ~~ Diagnose write errors to pipes
+> make 2>&1 | tee build.log ~~ Watch and save output
+> echo "line" | sudo tee -a /etc/hosts ~~ Append to a root-owned file
+
+@echo ~~ Print text
+$ echo [OPTION]... [STRING]...
+- -n ~~ No trailing newline
+- -e ~~ Interpret \n, \t, \e escapes
+- > FILE ~~ Write to a file (overwrite)
+- >> FILE ~~ Append to a file
+> echo "Hello $USER" ~~ Variables expand in double quotes
+> echo 'Literal $HOME' ~~ No expansion in single quotes
+> echo "export EDITOR=nano" >> ~/.bashrc ~~ Append a line
+
+@printf ~~ Formatted output
+$ printf FORMAT [ARGUMENT]...
+- %s ~~ String
+- %d ~~ Integer
+- %.2f ~~ Number with 2 decimals
+- %-10s ~~ Left-aligned, width 10
+- \n \t ~~ Newline, tab
+- %% ~~ A literal percent sign
+> printf '%-10s %5d\n' apples 12 ~~ Aligned columns
+> printf '%s\n' a b c ~~ One argument per line
+
+@readlink ~~ Resolve symlinks
+$ readlink [OPTION]... FILE...
+- -f ~~ Follow every link to the final real path
+- -e ~~ Like -f but the file must exist
+> readlink -f $(which python3) ~~ Real binary behind a link
+
+@realpath ~~ Absolute, canonical path
+$ realpath [OPTION]... FILE...
+- -s ~~ Don't resolve symlinks
+- --relative-to=DIR ~~ Path relative to DIR
+> realpath ../notes.txt ~~ Full path
+> realpath --relative-to=/srv /srv/www/site ~~ www/site
+
+@truncate ~~ Shrink or extend a file to a size
+$ truncate -s SIZE FILE...
+- -s SIZE ~~ New size (100M, 0, +1G)
+- -c ~~ Don't create missing files
+> truncate -s 0 big.log ~~ Empty a log without deleting it
+> truncate -s 10G disk.img ~~ Sparse 10 GB file
+
+@dd ~~ Low-level copy and conversion
+$ dd if=INPUT of=OUTPUT [bs=SIZE] [count=N] [status=progress]
+- if= ~~ Input file or device
+- of= ~~ Output file or device (double-check!)
+- bs= ~~ Block size, e.g. 4M
+- count= ~~ Number of blocks
+- status=progress ~~ Show progress
+- oflag=sync / conv=fsync ~~ Flush to disk before finishing
+- iflag=direct / oflag=direct ~~ Bypass the cache (benchmarks)
+> sudo dd if=Fedora.iso of=/dev/sdX bs=4M status=progress oflag=sync ~~ Write an ISO to USB
+> dd if=/dev/zero of=test.img bs=1M count=1024 ~~ 1 GB file of zeros
+
+@rsync ~~ Fast, incremental file copying and sync
+$ rsync [OPTION]... SRC... DEST
+- -a ~~ Archive: recursive, keep perms/times/links
+- -v ~~ Verbose
+- -h ~~ Human sizes
+- -z ~~ Compress during transfer
+- -P ~~ Progress + resume partial files
+- --delete ~~ Delete files in DEST that are gone from SRC
+- -n ~~ Dry run: show what would happen
+- -H -A -X ~~ Hard links, ACLs, extended attributes
+- --exclude=PATTERN ~~ Skip
+- -e "ssh -p 2222" ~~ Custom SSH options
+- --info=progress2 ~~ One overall progress line
+- --link-dest=DIR ~~ Hard-link unchanged files (snapshots)
+> rsync -avh ~/Documents/ /run/media/$USER/USB/Documents/ ~~ Copy (trailing / = contents)
+> rsync -avhn --delete src/ dst/ ~~ Preview a mirror first
+> rsync -avzP ~/project/ server:/srv/project/ ~~ Over SSH with progress
+> rsync -aHAX --info=progress2 / /mnt/backup/ --exclude={/proc,/sys,/dev,/run,/tmp,/mnt} ~~ Whole system copy
+
+@scp ~~ Copy files over SSH
+$ scp [OPTION]... SOURCE... TARGET
+- -r ~~ Copy folders
+- -P PORT ~~ SSH port (capital P!)
+- -i KEY ~~ Identity file
+- -p ~~ Keep times and modes
+- -C ~~ Compress
+- -J HOST ~~ Through a jump host
+> scp file.txt user@server:/tmp/ ~~ Upload
+> scp -r user@server:/var/log/app ./logs ~~ Download a folder
+> scp -P 2222 backup.tar user@server: ~~ Custom port
+
+@sha256sum ~~ Compute and check SHA-256 checksums
+$ sha256sum [OPTION]... [FILE]...
+- -c FILE ~~ Check files against a checksum list
+- --ignore-missing ~~ Skip files not present
+- --quiet ~~ Only report failures
+> sha256sum Fedora.iso ~~ Checksum of a download
+> sha256sum -c CHECKSUM --ignore-missing ~~ Verify against the published list
+
+@jq ~~ Query and transform JSON
+$ jq [OPTION]... FILTER [FILE]...
+- . ~~ Pretty-print the whole document
+- .key / .a.b ~~ Pick a field
+- .[] ~~ Iterate an array
+- select(cond) ~~ Filter items
+- -r ~~ Raw strings (no quotes)
+- -c ~~ Compact one-line output
+- -s ~~ Slurp: read all inputs into one array
+- --arg name value ~~ Pass a variable
+> curl -s api/url | jq . ~~ Pretty-print
+> jq -r '.[].name' data.json ~~ All names
+> jq '.[] | select(.age > 30)' people.json ~~ Filter objects
+> podman inspect web | jq '.[0].State.Status' ~~ One field from command output
+
+@tree ~~ Show a directory tree
+$ tree [OPTION]... [DIR]
+- -L N ~~ Max depth
+- -a ~~ Include hidden files
+- -d ~~ Directories only
+- -h ~~ Sizes
+- -I PATTERN ~~ Ignore matching (e.g. 'node_modules|.git')
+- --du ~~ Folder sizes
+> tree -L 2 ~~ Two levels deep
+> tree -I 'node_modules|.git' ~~ Skip noise
+
+@man ~~ Read manual pages
+$ man [SECTION] NAME
+$ man -k KEYWORD
+- -k WORD ~~ Search page titles (same as apropos)
+- -f NAME ~~ Short description (whatis)
+- 1 / 5 / 8 ~~ Sections: commands / config files / admin
+- /word ~~ (inside) search; q quits
+> man ls ~~ Manual for ls
+> man 5 crontab ~~ The crontab file format, not the command
+> man -k firewall ~~ Find related commands
+
+@history ~~ Shell command history
+$ history [N]
+- N ~~ Last N commands
+- -c ~~ Clear history
+- -d N ~~ Delete entry N
+- !N ~~ Re-run command number N
+- !! ~~ Re-run the last command (e.g. sudo !!)
+- Ctrl+R ~~ Search history interactively
+> history | grep dnf ~~ Find a previous command
+> sudo !! ~~ Repeat the last command with sudo

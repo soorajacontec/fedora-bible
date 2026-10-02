@@ -1,0 +1,592 @@
+@dnf ~~ Fedora package manager (DNF5)
+$ dnf [OPTIONS] COMMAND [ARGS]...
+- install PKG ~~ Install packages (also local .rpm files, @groups)
+- remove PKG ~~ Remove packages
+- upgrade ~~ Upgrade everything (or named packages)
+- search WORD ~~ Search names and summaries
+- info PKG ~~ Details: version, size, repo, description
+- list --installed ~~ Installed packages
+- provides FILE ~~ Which package provides a file/command
+- repoquery ~~ Query repository metadata (--userinstalled, --requires…)
+- history ~~ Past transactions (list, info, undo)
+- group list / install ~~ Package groups
+- autoremove ~~ Remove unneeded dependencies
+- clean all ~~ Clear cached metadata and packages
+- makecache ~~ Refresh metadata now
+- swap A B ~~ Replace one package with another
+- downgrade PKG ~~ Go back a version
+- copr enable USER/PROJECT ~~ Add a COPR repository
+- -y ~~ Assume yes
+- --refresh ~~ Force fresh metadata
+- --allowerasing ~~ Allow removing conflicting packages
+- --best ~~ Insist on the newest versions
+- --setopt=install_weak_deps=False ~~ Skip weak (recommended) deps
+> sudo dnf upgrade --refresh ~~ Update the whole system
+> sudo dnf install htop ~~ Install a package
+> dnf provides /usr/bin/dig ~~ Which package has a command
+> dnf history list | head ~~ Recent transactions
+> sudo dnf history undo last ~~ Undo the last transaction
+> sudo dnf autoremove ~~ Remove orphaned dependencies
+
+@rpm ~~ Low-level RPM package tool
+$ rpm -q[OPTIONS] PACKAGE
+$ rpm -V PACKAGE
+- -qa ~~ All installed packages
+- -qi PKG ~~ Package info
+- -ql PKG ~~ Files in a package
+- -qf FILE ~~ Which package owns a file
+- -qR PKG ~~ What it requires
+- -q --changelog PKG ~~ Change log
+- -qc PKG ~~ Config files only
+- -V PKG ~~ Verify files against the package
+- -Va ~~ Verify every package
+- --last ~~ Sort -qa by install date
+- -K FILE.rpm ~~ Check a downloaded RPM's signature
+> rpm -qf /usr/bin/ssh ~~ Owner of a file
+> rpm -qa --last | head ~~ Most recently installed
+> rpm -ql nginx | grep conf ~~ Config files of a package
+> rpm -V openssh-server ~~ Was anything modified?
+
+@flatpak ~~ Install and run sandboxed apps
+$ flatpak [OPTION]... COMMAND [ARGS]
+- install REMOTE APP ~~ Install an app
+- uninstall APP ~~ Remove (--delete-data, --unused)
+- update ~~ Update all apps and runtimes
+- run APP ~~ Start an app
+- list ~~ Installed (--app, --runtime, --columns=…)
+- search WORD ~~ Search remotes
+- info APP ~~ Details (-M permissions)
+- override APP ~~ Change permissions (--filesystem, --socket…)
+- remotes / remote-add ~~ Manage sources like Flathub
+- ps / kill ~~ Running apps
+- history ~~ Install/update log
+- mask / pin ~~ Freeze an app / keep a runtime
+- repair ~~ Fix a broken install
+- --user / --system ~~ Per-user or system-wide installation
+> flatpak install flathub org.gimp.GIMP ~~ Install from Flathub
+> flatpak update -y ~~ Update all
+> flatpak list --app --columns=application,version,size ~~ Apps with sizes
+> flatpak uninstall --unused ~~ Clean up runtimes
+> flatpak override --user --nofilesystem=home APP ~~ Tighten permissions
+
+@systemctl ~~ Control systemd services and the system
+$ systemctl [OPTIONS] COMMAND [UNIT]...
+- status UNIT ~~ State, recent log lines, PID
+- start / stop / restart UNIT ~~ Now
+- reload UNIT ~~ Re-read config without restart
+- enable / disable UNIT ~~ At boot (--now: also start/stop)
+- is-active / is-enabled ~~ Scripting checks
+- mask / unmask UNIT ~~ Block a unit completely
+- list-units ~~ Loaded units (--type=service, --state=failed)
+- list-unit-files ~~ Installed units + enabled state
+- list-timers ~~ Scheduled timers
+- --failed ~~ Failed units
+- cat UNIT ~~ Show the unit file(s)
+- edit UNIT ~~ Create a drop-in override
+- daemon-reload ~~ After editing unit files
+- reboot / poweroff / suspend ~~ Power
+- --user ~~ Your per-user services
+> systemctl status sshd ~~ Is it running?
+> sudo systemctl enable --now nginx ~~ Start + at every boot
+> systemctl --failed ~~ What failed
+> sudo systemctl edit nginx ~~ Override settings safely
+> systemctl list-timers ~~ When timers run next
+
+@journalctl ~~ Read the systemd journal (logs)
+$ journalctl [OPTIONS] [MATCHES]
+- -u UNIT ~~ One service
+- -f ~~ Follow new entries
+- -b ~~ This boot (-b -1 = previous)
+- -p err ~~ Priority: emerg…err…info…debug
+- -k ~~ Kernel messages
+- --since / --until ~~ "1 hour ago", "today", "2026-09-30 10:00"
+- -n N ~~ Last N lines
+- -e ~~ Jump to the end
+- -o cat|json|short-iso ~~ Output format
+- -g PATTERN ~~ grep messages
+- --list-boots ~~ Boot history
+- --disk-usage ~~ Journal size
+- --vacuum-size=500M ~~ Shrink the journal
+- --user ~~ Your user journal
+> journalctl -u sshd -f ~~ Follow one service
+> journalctl -b -p err ~~ Errors this boot
+> journalctl --since "1 hour ago" ~~ Recent entries
+> journalctl -b -1 -e ~~ End of the previous boot (crash?)
+> sudo journalctl --vacuum-size=500M ~~ Free space
+
+@sudo ~~ Run a command as root (or another user)
+$ sudo [OPTION]... COMMAND
+- -i ~~ Root login shell
+- -s ~~ Shell as root, keep your environment
+- -u USER ~~ Run as another user
+- -l ~~ What you are allowed to run
+- -k ~~ Forget cached password
+- -E ~~ Keep environment variables
+- -e FILE ~~ Edit a file safely (= sudoedit)
+> sudo dnf upgrade ~~ Run as root
+> sudo -u postgres psql ~~ Run as another user
+> sudo -l ~~ My sudo rights
+> sudo !! ~~ Repeat the last command as root
+
+@sudoedit ~~ Edit root-owned files with your own editor
+$ sudoedit FILE...
+- SUDO_EDITOR=nano ~~ Choose the editor
+- (why) ~~ Editor runs as you; only the save is privileged
+> sudoedit /etc/ssh/sshd_config ~~ Edit a system config
+> SUDO_EDITOR=vim sudoedit /etc/hosts ~~ With a specific editor
+
+@ps ~~ Snapshot of running processes
+$ ps [OPTIONS]
+- aux ~~ Every process, BSD style
+- -ef ~~ Every process, full format
+- -u USER ~~ One user's processes
+- -p PID ~~ Specific processes
+- -o COLS ~~ Custom columns (pid,ppid,%cpu,%mem,cmd)
+- --sort=-%mem ~~ Sort by column (- = descending)
+- -L ~~ Show threads
+- -Z ~~ SELinux contexts
+- f / --forest ~~ Process tree
+> ps aux --sort=-%mem | head ~~ Top memory users
+> ps -eo pid,ppid,%cpu,%mem,cmd --sort=-%cpu | head ~~ Top CPU users
+> ps -ef | grep [n]ginx ~~ Find a process (bracket trick hides grep)
+> ps -p 1234 -o etime= ~~ How long a process has run
+
+@top ~~ Live process viewer
+$ top [OPTIONS]
+- -o FIELD ~~ Sort by %CPU, %MEM…
+- -u USER ~~ Only one user
+- -p PID ~~ Only these PIDs
+- -b -n 1 ~~ One batch snapshot (scripts)
+- P / M / T ~~ (inside) sort by CPU / memory / time
+- k ~~ (inside) kill a process
+- 1 ~~ (inside) per-CPU view
+- q ~~ (inside) quit
+> top -o %MEM ~~ Sorted by memory
+> top -b -n 1 | head -15 ~~ Snapshot for a report
+
+@htop ~~ Interactive process viewer
+$ htop [OPTIONS]
+- -u USER ~~ One user
+- -p PID,PID ~~ Specific processes
+- -t ~~ Tree view
+- F3 / F4 ~~ Search / filter
+- F5 ~~ Tree
+- F6 ~~ Sort column
+- F9 ~~ Kill
+> htop ~~ Start
+> htop -u $USER -t ~~ My processes as a tree
+
+@kill ~~ Send a signal to a process
+$ kill [-SIGNAL] PID...
+- -15 / -TERM ~~ Ask to quit (default)
+- -9 / -KILL ~~ Force kill (last resort)
+- -1 / -HUP ~~ Reload / hang up
+- -STOP / -CONT ~~ Pause / resume
+- -l ~~ List signals
+- %1 ~~ Shell job number
+> kill 1234 ~~ Polite stop
+> kill -9 1234 ~~ Force stop
+> kill -HUP $(pidof nginx) ~~ Reload a daemon
+
+@pkill ~~ Signal processes by name
+$ pkill [OPTIONS] PATTERN
+- -f ~~ Match the full command line
+- -u USER ~~ Only this user's processes
+- -x ~~ Exact name match
+- -9 ~~ Force
+- -n / -o ~~ Newest / oldest only
+> pkill firefox ~~ Close all Firefox processes
+> pkill -f "python3 server.py" ~~ By full command line
+> pkill -u guest ~~ Everything a user runs
+
+@pgrep ~~ Find process IDs by name
+$ pgrep [OPTIONS] PATTERN
+- -l ~~ Show names
+- -a ~~ Show full command lines
+- -f ~~ Match full command line
+- -u USER ~~ Only this user
+- -c ~~ Count
+> pgrep -a sshd ~~ PIDs + commands
+> pgrep -c -u $USER ~~ How many processes I run
+
+@free ~~ Memory usage
+$ free [OPTIONS]
+- -h ~~ Human units
+- -m / -g ~~ MiB / GiB
+- -s N ~~ Repeat every N seconds
+- -t ~~ Total line
+> free -h ~~ RAM + swap (look at "available")
+
+@uptime ~~ How long the system has been up + load
+$ uptime [-p|-s]
+- -p ~~ Pretty: "up 3 days, 2 hours"
+- -s ~~ Boot time
+> uptime ~~ Load averages (1, 5, 15 min)
+
+@uname ~~ Kernel and system info
+$ uname [OPTION]...
+- -a ~~ Everything
+- -r ~~ Kernel release
+- -m ~~ Machine architecture
+- -n ~~ Hostname
+> uname -r ~~ Running kernel version
+
+@hostnamectl ~~ Hostname and machine info
+$ hostnamectl [COMMAND]
+- (no args) ~~ Hostname, OS, kernel, hardware
+- hostname NAME ~~ Set the hostname
+- --static / --pretty ~~ Which name to set
+- chassis TYPE ~~ desktop, laptop, server…
+> hostnamectl ~~ Overview
+> sudo hostnamectl hostname nas ~~ Rename the machine
+
+@timedatectl ~~ Time, date, time zone and NTP
+$ timedatectl [COMMAND]
+- status ~~ Time, zone, NTP sync
+- set-timezone ZONE ~~ e.g. Asia/Qatar
+- list-timezones ~~ All zones
+- set-ntp true|false ~~ Automatic time
+- set-time "YYYY-MM-DD HH:MM" ~~ Manual time (NTP off)
+- set-local-rtc 0|1 ~~ Hardware clock in UTC (0) or local (dual-boot)
+> timedatectl ~~ Status
+> sudo timedatectl set-timezone Asia/Qatar ~~ Change zone
+
+@localectl ~~ Language and keyboard settings
+$ localectl [COMMAND]
+- status ~~ Current locale + keymaps
+- set-locale LANG=… ~~ System language
+- set-keymap MAP ~~ Console keyboard
+- set-x11-keymap LAYOUT ~~ Graphical keyboard layout
+- list-locales / list-keymaps ~~ Choices
+> localectl ~~ Status
+> sudo localectl set-locale LANG=en_GB.UTF-8 ~~ Change language
+
+@date ~~ Show or format dates
+$ date [OPTION]... [+FORMAT]
+- +%F ~~ 2026-09-30
+- +%T ~~ 14:05:09
+- +%s ~~ Seconds since 1970 (epoch)
+- -d STRING ~~ Another date: "tomorrow", "next mon", "@1790000000"
+- -u ~~ UTC
+- -I / -R ~~ ISO 8601 / RFC 5322
+> date +%F_%H%M ~~ Timestamp for file names
+> date -d "2 weeks ago" +%F ~~ Date arithmetic
+> date -d @1790755800 ~~ Convert epoch to a date
+
+@loginctl ~~ Login sessions, users and seats
+$ loginctl [COMMAND]
+- list-sessions ~~ Who is logged in
+- show-session ID ~~ Details (-p Type, -p Desktop)
+- lock-session / unlock-session ~~ Lock screen
+- terminate-user USER ~~ Log a user out
+- enable-linger USER ~~ User services run without login
+> loginctl list-sessions ~~ Sessions
+> sudo loginctl enable-linger $USER ~~ Keep user services after logout
+
+@systemd-analyze ~~ Boot performance and unit checks
+$ systemd-analyze [COMMAND]
+- (no args) ~~ Total boot time
+- blame ~~ Slowest units
+- critical-chain ~~ What the boot waited for
+- plot > boot.svg ~~ Timeline picture
+- verify FILE ~~ Check a unit file
+- security UNIT ~~ Sandbox exposure score
+- calendar EXPR ~~ Test OnCalendar= expressions
+> systemd-analyze blame | head ~~ Slowest at boot
+> systemd-analyze calendar "Mon *-*-* 02:00" ~~ When would this fire?
+> systemd-analyze security sshd ~~ Hardening score
+
+@systemd-run ~~ Run a command as a transient unit
+$ systemd-run [OPTIONS] COMMAND
+- --user ~~ In your user manager
+- --scope ~~ Attach to the current terminal
+- -p PROP=VAL ~~ Resource limits, e.g. MemoryMax=2G
+- --on-calendar=EXPR ~~ One-off scheduled job
+- --on-active=30m ~~ Run in 30 minutes
+- --unit NAME ~~ Name it
+> systemd-run --user --scope -p MemoryMax=2G firefox ~~ Cap an app's RAM
+> systemd-run --user --on-active=30m notify-send "Break!" ~~ Reminder
+
+@crontab ~~ Schedule commands with cron
+$ crontab [-l | -e | -r] [-u USER]
+- -e ~~ Edit your crontab
+- -l ~~ List it
+- -r ~~ Remove it
+- MIN HOUR DOM MON DOW CMD ~~ Line format
+- @reboot / @daily ~~ Shortcuts
+> crontab -e ~~ Edit
+> crontab -l ~~ Show
+> 0 2 * * * /usr/local/bin/backup.sh ~~ Line: every day at 02:00
+
+@lsblk ~~ List block devices (disks, partitions)
+$ lsblk [OPTIONS] [DEVICE]
+- -f ~~ Filesystems, labels, UUIDs, mount points
+- -o COLS ~~ Choose columns (NAME,SIZE,MODEL,TRAN…)
+- -d ~~ Disks only, no partitions
+- -p ~~ Full device paths
+- -J ~~ JSON
+> lsblk -f ~~ Filesystems + where mounted
+> lsblk -d -o NAME,SIZE,MODEL,TRAN,ROTA ~~ Physical disks
+
+@mount ~~ Mount filesystems
+$ mount [OPTIONS] DEVICE DIR
+- -t TYPE ~~ ext4, xfs, btrfs, nfs, cifs…
+- -o OPTS ~~ ro, noatime, subvol=…, uid=…
+- -a ~~ Mount everything in /etc/fstab
+- -o remount,rw ~~ Change options on a mounted fs
+- --bind OLD NEW ~~ Mirror a folder elsewhere
+- UUID=… ~~ Mount by UUID
+> sudo mount /dev/sdb1 /mnt ~~ Mount a partition
+> sudo mount -o ro,loop disk.iso /mnt ~~ Mount an ISO
+> sudo mount -a ~~ Test fstab changes
+> findmnt / ~~ (see findmnt) what is mounted where
+
+@umount ~~ Unmount filesystems
+$ umount [OPTIONS] DIR|DEVICE
+- -l ~~ Lazy: detach now, clean up when no longer busy
+- -f ~~ Force (network filesystems)
+- -R ~~ Recursive
+> sudo umount /mnt ~~ Unmount
+> sudo umount -l /mnt/nfs ~~ Busy network share
+
+@findmnt ~~ Show mounted filesystems as a tree
+$ findmnt [OPTIONS] [TARGET]
+- -t TYPE ~~ Only one type
+- -o COLS ~~ Columns
+- --verify ~~ Check /etc/fstab for mistakes
+- -D ~~ df-like output
+> findmnt / ~~ What is mounted on /
+> sudo findmnt --verify ~~ Validate fstab before reboot
+
+@blkid ~~ Show UUIDs, labels and filesystem types
+$ blkid [OPTIONS] [DEVICE]
+- -o value -s UUID ~~ Just the UUID
+- -L LABEL ~~ Find device by label
+> sudo blkid /dev/sdb1 ~~ UUID for fstab
+
+@parted ~~ Partition disks
+$ parted [OPTIONS] DEVICE [COMMAND]
+- print ~~ Show the partition table
+- mklabel gpt ~~ New GPT table (erases!)
+- mkpart NAME FS START END ~~ Create a partition
+- resizepart N END ~~ Grow/shrink a partition
+- -s ~~ Script mode, no prompts
+- -l ~~ List all disks
+> sudo parted -l ~~ All disks + partitions
+> sudo parted /dev/sdb -- mklabel gpt mkpart data ext4 1MiB 100% ~~ One big partition
+
+@lsof ~~ List open files and who uses them
+$ lsof [OPTIONS] [FILE]
+- -i :PORT ~~ Who uses a network port
+- -p PID ~~ Files a process has open
+- -u USER ~~ Files of a user
+- +D DIR ~~ Files open under a directory
+- -t ~~ PIDs only
+> sudo lsof -i :80 ~~ What listens on port 80
+> sudo lsof +D /mnt/usb ~~ Why "target is busy"
+
+@fuser ~~ Processes using files or sockets
+$ fuser [OPTIONS] FILE|MOUNT|PORT/PROTO
+- -v ~~ Verbose
+- -m ~~ Everything on that mount
+- -k ~~ Kill them
+- 80/tcp ~~ A port
+> sudo fuser -vm /mnt/usb ~~ Who blocks unmounting
+> sudo fuser -v 22/tcp ~~ Who has port 22
+
+@lscpu ~~ CPU information
+$ lscpu [OPTIONS]
+- -e ~~ Per-CPU table
+- -C ~~ Caches
+- -J ~~ JSON
+> lscpu ~~ Model, cores, threads, flags
+
+@lspci ~~ List PCI devices
+$ lspci [OPTIONS]
+- -k ~~ Kernel driver in use
+- -nn ~~ Vendor:device IDs
+- -v / -vv ~~ More detail
+- -s SLOT ~~ One device
+- -t ~~ Tree
+> lspci -k | grep -A3 -i vga ~~ Graphics card + driver
+> lspci -nn ~~ IDs for driver searches
+
+@lsusb ~~ List USB devices
+$ lsusb [OPTIONS]
+- -t ~~ Tree with speeds
+- -v ~~ Verbose
+- -d VID:PID ~~ One device
+> lsusb ~~ All USB devices
+> lsusb -t ~~ Which port, what speed
+
+@dmidecode ~~ BIOS/hardware info from firmware tables
+$ sudo dmidecode [-t TYPE]
+- -t memory ~~ RAM sticks
+- -t bios ~~ BIOS version
+- -t system ~~ Make, model, serial
+- -s KEYWORD ~~ One value, e.g. system-product-name
+> sudo dmidecode -t memory | grep -E "Size|Speed" ~~ RAM details
+> sudo dmidecode -s bios-version ~~ BIOS version
+
+@dmesg ~~ Kernel ring buffer messages
+$ sudo dmesg [OPTIONS]
+- -T ~~ Human-readable timestamps
+- -w ~~ Follow new messages
+- -l err,warn ~~ Only these levels
+- -H ~~ Human, paged, coloured
+> sudo dmesg -T | tail ~~ Latest kernel messages
+> sudo dmesg -w ~~ Watch while plugging in a device
+
+@modprobe ~~ Load or remove kernel modules
+$ modprobe [OPTIONS] MODULE [PARAM=VAL]
+- -r ~~ Remove a module
+- -n -v ~~ Dry run, show what would load
+- -c ~~ Show module configuration
+> sudo modprobe vfio-pci ~~ Load
+> sudo modprobe -r uvcvideo && sudo modprobe uvcvideo ~~ Reload a driver
+
+@sysctl ~~ Kernel parameters
+$ sysctl [OPTIONS] [NAME[=VALUE]]
+- -a ~~ All parameters
+- -w NAME=VALUE ~~ Set now (until reboot)
+- -p FILE ~~ Load from a file
+- --system ~~ Load all /etc/sysctl.d files
+> sysctl vm.swappiness ~~ Read
+> sudo sysctl -w vm.swappiness=10 ~~ Set now
+> echo "vm.swappiness=10" | sudo tee /etc/sysctl.d/99-swap.conf ~~ Make permanent
+
+@grubby ~~ Manage boot entries and kernel arguments
+$ grubby [OPTIONS]
+- --info=ALL ~~ All boot entries
+- --default-kernel ~~ Which kernel boots by default
+- --set-default=PATH ~~ Change the default
+- --update-kernel=ALL --args="…" ~~ Add kernel arguments
+- --update-kernel=ALL --remove-args="…" ~~ Remove them
+> sudo grubby --info=ALL | grep -E "^kernel|^args" ~~ Entries + arguments
+> sudo grubby --update-kernel=ALL --args="mitigations=auto" ~~ Add an argument
+
+@dracut ~~ Build the initramfs
+$ dracut [OPTIONS] [IMAGE] [KERNEL]
+- -f ~~ Overwrite the existing image
+- --regenerate-all ~~ For every installed kernel
+- --add-drivers "…" ~~ Include extra modules
+- -v ~~ Verbose
+> sudo dracut -f ~~ Rebuild for the running kernel
+> lsinitrd | grep vfio ~~ Check what is inside
+
+@useradd ~~ Create a user account
+$ useradd [OPTIONS] USER
+- -m ~~ Create the home directory
+- -G GROUPS ~~ Extra groups (e.g. wheel)
+- -s SHELL ~~ Login shell
+- -c "Full Name" ~~ Comment / full name
+- -r ~~ System account
+- -u UID ~~ Specific UID
+- -e YYYY-MM-DD ~~ Expiry date
+> sudo useradd -m -G wheel -c "Aisha" aisha ~~ New admin user
+> sudo passwd aisha ~~ Then set a password
+
+@usermod ~~ Modify a user account
+$ usermod [OPTIONS] USER
+- -aG GROUP ~~ Add to a group (keep the others! -a is vital)
+- -L / -U ~~ Lock / unlock
+- -s SHELL ~~ Change shell
+- -l NEW ~~ Rename the login
+- -d DIR -m ~~ Move the home directory
+- -e DATE ~~ Expire account
+> sudo usermod -aG wheel aisha ~~ Give sudo rights
+> sudo usermod -aG libvirt $USER ~~ Then log out and in
+
+@passwd ~~ Change passwords
+$ passwd [OPTIONS] [USER]
+- (no args) ~~ Your own password
+- -l / -u ~~ Lock / unlock
+- -e ~~ Force change at next login
+- -S ~~ Status
+- -d ~~ Delete password (no password!)
+> passwd ~~ Change mine
+> sudo passwd -e aisha ~~ Must change at next login
+
+@id ~~ User and group IDs
+$ id [OPTION]... [USER]
+- -u / -g ~~ UID / primary GID
+- -G ~~ All group IDs
+- -n ~~ Names instead of numbers
+- -Z ~~ SELinux context
+> id ~~ Me
+> id -nG aisha ~~ Aisha's groups
+
+@getent ~~ Look up users, groups, hosts…
+$ getent DATABASE [KEY]
+- passwd USER ~~ User entry (local, LDAP, AD)
+- group GROUP ~~ Members of a group
+- hosts NAME ~~ Name resolution as programs see it
+> getent group wheel ~~ Who can sudo
+> getent hosts nas.lan ~~ Resolve like an app would
+
+@last ~~ Login history
+$ last [OPTIONS] [USER]
+- -n N ~~ Last N entries
+- -x ~~ Include shutdowns and reboots
+- -F ~~ Full dates
+- reboot ~~ Only reboots
+> last -n 10 ~~ Recent logins
+> last -x reboot | head ~~ Reboot history
+
+@w ~~ Who is logged in and what they do
+$ w [OPTIONS] [USER]
+- -h ~~ No header
+- -s ~~ Short format
+> w ~~ Users, idle time, load
+
+@tuned-adm ~~ System tuning profiles
+$ tuned-adm COMMAND
+- active ~~ Current profile
+- list ~~ Available profiles
+- profile NAME ~~ Switch
+- recommend ~~ Suggested profile
+- off ~~ Disable tuning
+> tuned-adm active ~~ Which profile
+> sudo tuned-adm profile powersave ~~ Save battery
+
+@powerprofilesctl ~~ Desktop power modes
+$ powerprofilesctl [COMMAND]
+- get ~~ Current mode
+- set MODE ~~ performance | balanced | power-saver
+- list ~~ All modes
+> powerprofilesctl set power-saver ~~ Battery mode
+
+@smartctl ~~ Disk health (S.M.A.R.T.)
+$ sudo smartctl [OPTIONS] DEVICE
+- -H ~~ Health verdict
+- -a ~~ Everything
+- -t short|long ~~ Run a self-test
+- -l selftest ~~ Test results
+- -x ~~ Extended info (NVMe + SATA)
+> sudo smartctl -H /dev/nvme0n1 ~~ PASSED?
+> sudo smartctl -a /dev/sda | less ~~ All attributes
+
+@logger ~~ Write a message to the system log
+$ logger [OPTIONS] MESSAGE
+- -t TAG ~~ Identifier
+- -p PRIO ~~ e.g. user.err
+> logger -t backup "Backup finished" ~~ Then: journalctl -t backup
+
+@coredumpctl ~~ Inspect crashed programs
+$ coredumpctl [COMMAND] [MATCH]
+- list ~~ Recent crashes
+- info PID|NAME ~~ Details + backtrace
+- gdb PID|NAME ~~ Open in the debugger
+- dump -o FILE ~~ Save the core file
+> coredumpctl list ~~ What crashed
+> coredumpctl info firefox ~~ Why it crashed
+
+@efibootmgr ~~ UEFI boot entries
+$ sudo efibootmgr [OPTIONS]
+- (no args) ~~ Entries + boot order
+- -v ~~ Verbose (device paths)
+- -o 0001,0000 ~~ Set boot order
+- -n 0002 ~~ Boot this entry next time only
+- -b XXXX -B ~~ Delete an entry
+> sudo efibootmgr ~~ Show
+> sudo efibootmgr -n 0002 ~~ One-time boot to entry 0002

@@ -1,0 +1,621 @@
+@git ~~ Version control
+$ git [OPTIONS] COMMAND [ARGS]
+- init / clone URL ~~ New repo / copy one
+- status ~~ What changed (-s short)
+- add FILE / add -p ~~ Stage files / stage hunks interactively
+- commit -m "msg" ~~ Record staged changes (--amend fixes the last)
+- log --oneline --graph ~~ History
+- diff / diff --staged ~~ Unstaged / staged changes
+- branch / switch -c NAME ~~ List / create + switch branches
+- merge / rebase ~~ Combine branches
+- pull / push ~~ Sync with the remote
+- fetch ~~ Download without merging
+- stash / stash pop ~~ Park changes temporarily
+- restore FILE ~~ Discard changes to a file
+- reset --soft HEAD~1 ~~ Undo last commit, keep changes
+- revert COMMIT ~~ New commit that undoes another
+- tag v1.0 ~~ Label a release
+- remote -v ~~ Remotes
+- blame FILE ~~ Who changed each line
+- bisect ~~ Find the commit that broke something
+> git status -s ~~ Short status
+> git add -p && git commit -m "Fix login bug" ~~ Commit selected changes
+> git log --oneline --graph --all | head -20 ~~ History graph
+> git switch -c feature/x ~~ New branch
+> git stash && git pull --rebase && git stash pop ~~ Update while you have local changes
+
+@make ~~ Build automation
+$ make [OPTIONS] [TARGET]...
+- -j N ~~ Parallel jobs (-j$(nproc))
+- -n ~~ Dry run: print commands
+- -C DIR ~~ Run in another directory
+- -B ~~ Rebuild everything
+- -k ~~ Keep going after errors
+- VAR=value ~~ Override a variable
+> make -j$(nproc) ~~ Fast build
+> sudo make install ~~ Install (prefer packages!)
+
+@python3 ~~ Python interpreter
+$ python3 [OPTIONS] [SCRIPT | -m MODULE | -c CODE] [ARGS]
+- -m venv DIR ~~ Create a virtual environment
+- -m pip ~~ pip for this Python
+- -m http.server 8000 ~~ Serve the current folder
+- -m json.tool ~~ Pretty-print JSON
+- -c "code" ~~ Run a one-liner
+- -i ~~ Interactive after the script
+- -V ~~ Version
+> python3 -m venv .venv && source .venv/bin/activate ~~ Project environment
+> python3 -m http.server 8000 ~~ Quick web server
+> python3 -c "import sys; print(sys.version)" ~~ One-liner
+
+@pip ~~ Python package installer (use inside a venv)
+$ pip COMMAND [OPTIONS]
+- install PKG ~~ Install (-r requirements.txt, -U upgrade)
+- uninstall PKG ~~ Remove
+- list ~~ Installed (--outdated)
+- freeze > requirements.txt ~~ Pin versions
+- show PKG ~~ Details
+> pip install -r requirements.txt ~~ Project dependencies
+> pip list --outdated ~~ What can be upgraded
+
+@npm ~~ Node.js package manager
+$ npm COMMAND [ARGS]
+- init -y ~~ New package.json
+- install / i ~~ Install deps (PKG to add one, -D dev)
+- ci ~~ Clean install from the lock file
+- run SCRIPT ~~ Run a package.json script
+- update ~~ Update within version ranges
+- outdated ~~ What is behind
+- audit fix ~~ Fix known vulnerabilities
+- exec / npx ~~ Run a package binary
+> npm ci --omit=dev ~~ Production install
+> npm run build ~~ Run the build script
+
+@cargo ~~ Rust build tool and package manager
+$ cargo COMMAND [OPTIONS]
+- new NAME ~~ New project
+- build [--release] ~~ Compile
+- run ~~ Build + run
+- test ~~ Run tests
+- check ~~ Fast type check
+- clippy / fmt ~~ Lint / format
+- add CRATE ~~ Add a dependency
+- install CRATE ~~ Install a binary to ~/.cargo/bin
+> cargo new hello && cd hello && cargo run ~~ Hello world
+> cargo build --release ~~ Optimised binary
+
+@go ~~ Go toolchain
+$ go COMMAND [ARGS]
+- mod init NAME ~~ New module
+- run . ~~ Build + run
+- build -o BIN ~~ Compile
+- test ./... ~~ All tests
+- get PKG@VER ~~ Add a dependency
+- mod tidy ~~ Clean go.mod
+- install PKG@latest ~~ Install a tool to ~/go/bin
+> go mod init example.com/app && go run . ~~ Start a project
+
+@strace ~~ Trace system calls of a program
+$ strace [OPTIONS] COMMAND | -p PID
+- -f ~~ Follow child processes
+- -e trace=open,openat ~~ Only some calls (file, network…)
+- -p PID ~~ Attach to a running process
+- -o FILE ~~ Write to a file
+- -c ~~ Summary counts
+- -T ~~ Time spent in each call
+> strace -f -e trace=openat myapp 2>&1 | grep -v ENOENT ~~ Which files does it open?
+> sudo strace -p 1234 -c ~~ What is a process busy with
+
+@vim ~~ Vim text editor
+$ vim [OPTIONS] [FILE]...
+- i / a / o ~~ Insert before / after / new line
+- Esc ~~ Back to normal mode
+- :w / :q / :wq / :q! ~~ Save / quit / both / discard
+- dd / yy / p ~~ Delete line / copy line / paste
+- u / Ctrl+R ~~ Undo / redo
+- /text / n ~~ Search / next
+- :%s/a/b/g ~~ Replace everywhere
+- +N FILE ~~ Open at line N
+- -R ~~ Read-only
+> vim +42 app.py ~~ Open at line 42
+> vim -d a.conf b.conf ~~ Diff two files
+
+@nano ~~ Simple text editor
+$ nano [OPTIONS] [FILE]
+- Ctrl+O / Ctrl+X ~~ Save / exit
+- Ctrl+W ~~ Search
+- Ctrl+\ ~~ Replace
+- Ctrl+K / Ctrl+U ~~ Cut line / paste
+- Alt+U ~~ Undo
+- -l ~~ Show line numbers
+- +N FILE ~~ Open at line N
+- -B ~~ Back up the file before saving
+> nano -l ~/.bashrc ~~ Edit with line numbers
+> sudoedit /etc/hosts ~~ Edit a root file with nano
+
+@tmux ~~ Terminal multiplexer (sessions survive disconnects)
+$ tmux [COMMAND]
+- new -s NAME ~~ New named session
+- attach -t NAME ~~ Re-attach
+- ls ~~ Sessions
+- kill-session -t NAME ~~ End one
+- Ctrl+b d ~~ Detach
+- Ctrl+b % / " ~~ Split vertical / horizontal
+- Ctrl+b c / n / p ~~ New / next / previous window
+- Ctrl+b [ ~~ Scroll mode (q to exit)
+> tmux new -s work ~~ Start
+> tmux attach -t work ~~ Come back after SSH dropped
+
+@screen ~~ GNU screen terminal multiplexer
+$ screen [OPTIONS]
+- -S NAME ~~ Named session
+- -ls ~~ List sessions
+- -r NAME ~~ Re-attach
+- Ctrl+a d ~~ Detach
+- /dev/ttyUSB0 115200 ~~ Serial console
+> screen -S backup ~~ Long-running job
+> screen -r backup ~~ Back to it
+
+@podman ~~ Daemonless containers (Docker-compatible)
+$ podman [OPTIONS] COMMAND [ARGS]
+- run IMAGE ~~ Create + start (-d, --name, -p, -v, -e, --rm, -it)
+- ps -a ~~ Containers (all)
+- images ~~ Local images
+- pull / push IMAGE ~~ Registry transfer
+- build -t NAME . ~~ Build from a Containerfile
+- exec -it NAME sh ~~ Shell inside a running container
+- logs -f NAME ~~ Output
+- stop / start / rm NAME ~~ Lifecycle
+- inspect NAME ~~ JSON details (--format)
+- stats ~~ Live resource use
+- volume / network / pod ~~ Manage those objects
+- kube play / generate ~~ Kubernetes YAML
+- system prune ~~ Clean up
+- auto-update ~~ Update containers labelled for it
+> podman run -d --name web -p 8080:80 docker.io/library/nginx ~~ Web server
+> podman run --rm -it registry.fedoraproject.org/fedora:44 bash ~~ Throwaway shell
+> podman exec -it web sh ~~ Get inside
+> podman logs -f --tail 50 web ~~ Follow logs
+
+@buildah ~~ Build container images (scriptable)
+$ buildah COMMAND [ARGS]
+- from IMAGE ~~ Start a working container
+- run CTR -- CMD ~~ Run a command inside
+- copy CTR SRC DEST ~~ Copy files in
+- config ~~ Set CMD, ports, labels…
+- commit CTR NAME ~~ Save as an image
+- bud / build ~~ Build from a Containerfile
+> c=$(buildah from fedora-minimal) && buildah run $c -- microdnf -y install python3 ~~ Scripted build
+
+@skopeo ~~ Work with remote images without pulling
+$ skopeo COMMAND [ARGS]
+- inspect docker://IMAGE ~~ Details of a remote image
+- list-tags docker://REPO ~~ Tags
+- copy SRC DEST ~~ Registry → registry / file
+- sync ~~ Mirror many images
+- delete ~~ Delete from a registry
+> skopeo inspect docker://quay.io/fedora/fedora:44 ~~ Without pulling
+> skopeo list-tags docker://quay.io/fedora/fedora ~~ Available tags
+
+@toolbox ~~ Fedora dev containers integrated with your home
+$ toolbox COMMAND [ARGS]
+- create [NAME] ~~ New container (--distro, --release)
+- enter [NAME] ~~ Open a shell in it
+- run -c NAME CMD ~~ Run one command
+- list ~~ Containers + images
+- rm NAME ~~ Remove
+> toolbox create && toolbox enter ~~ Default Fedora toolbox
+> toolbox run -c fedora-toolbox-44 make ~~ One command
+
+@distrobox ~~ Any distro in a container, integrated with your desktop
+$ distrobox COMMAND [ARGS]
+- create -i IMAGE -n NAME ~~ New box
+- enter NAME ~~ Shell
+- list ~~ Boxes
+- rm NAME ~~ Remove
+- assemble create --file INI ~~ From a declarative file
+- distrobox-export --app|--bin ~~ Export to the host
+> distrobox create -i docker.io/library/ubuntu:24.04 -n ubuntu ~~ Ubuntu box
+> distrobox enter ubuntu ~~ Use it
+
+@kubectl ~~ Kubernetes command line
+$ kubectl COMMAND [TYPE] [NAME] [FLAGS]
+- get pods|svc|deploy|nodes ~~ List resources (-A all namespaces, -o wide|yaml)
+- describe TYPE NAME ~~ Details + events
+- logs POD ~~ Container output (-f, -c CONTAINER, --previous)
+- exec -it POD -- sh ~~ Shell inside
+- apply -f FILE ~~ Create/update from YAML
+- delete -f FILE ~~ Remove
+- rollout status|undo deploy/NAME ~~ Deployments
+- scale deploy/NAME --replicas=3 ~~ Scale
+- port-forward svc/NAME 8080:80 ~~ Reach a service locally
+- config get-contexts / use-context ~~ Clusters
+- -n NS ~~ Namespace
+> kubectl get pods -A ~~ Everything everywhere
+> kubectl describe pod web-7d9f8 ~~ Why is it failing?
+> kubectl logs -f deploy/web ~~ Follow logs
+
+@helm ~~ Kubernetes package manager
+$ helm COMMAND [ARGS]
+- repo add NAME URL ~~ Add a chart repository
+- search repo WORD ~~ Find charts
+- install REL CHART ~~ Install (-f values.yaml, -n NS)
+- upgrade --install REL CHART ~~ Install or upgrade
+- list ~~ Releases
+- rollback REL N ~~ Go back to revision N
+- uninstall REL ~~ Remove
+> helm upgrade --install web bitnami/nginx -f values.yaml ~~ Idempotent deploy
+
+@virsh ~~ Manage libvirt virtual machines
+$ virsh [OPTIONS] COMMAND [ARGS]
+- list --all ~~ VMs (running + off)
+- start / shutdown / reboot VM ~~ Power
+- destroy VM ~~ Hard power off
+- autostart VM ~~ Start at host boot
+- dominfo / domifaddr VM ~~ Details / IP address
+- console VM ~~ Serial console (Ctrl+] exits)
+- edit VM ~~ Edit XML
+- snapshot-create-as VM NAME ~~ Snapshot (snapshot-list, -revert)
+- net-list / pool-list ~~ Networks / storage
+- attach-disk / detach-disk ~~ Hotplug disks
+- undefine VM ~~ Delete (--remove-all-storage)
+- -c URI ~~ Other host / session libvirt
+> virsh list --all ~~ All VMs
+> virsh start f44 && virsh domifaddr f44 ~~ Start and get its IP
+> virsh snapshot-create-as f44 before-update ~~ Snapshot
+
+@virt-install ~~ Create virtual machines
+$ virt-install --name NAME --memory MB --vcpus N --disk … [--cdrom ISO | --import] --osinfo OS
+- --name ~~ VM name
+- --memory / --vcpus ~~ RAM (MiB) / CPUs
+- --disk size=30 ~~ New 30 GB disk (path=, backing_store=, bus=)
+- --cdrom ISO ~~ Install from an ISO
+- --location URL ~~ Network install
+- --import ~~ Boot an existing disk image
+- --osinfo NAME ~~ OS type (osinfo-query os)
+- --network bridge=br0 ~~ Network setup
+- --graphics none ~~ Headless (serial console)
+- --cloud-init ~~ Cloud image setup
+- --tpm / --boot uefi ~~ TPM, UEFI firmware
+- --noautoconsole ~~ Don't attach a console
+- --dry-run / --print-xml ~~ Test the command
+> virt-install --name f44 --memory 4096 --vcpus 2 --disk size=30 --cdrom ~/Downloads/Fedora.iso --osinfo fedora-unknown ~~ Basic VM
+
+@qemu-img ~~ Disk image tool
+$ qemu-img COMMAND [OPTIONS] FILE
+- info FILE ~~ Format, size, backing chain
+- create -f qcow2 FILE SIZE ~~ New image (-b BASE -F qcow2 for linked)
+- convert -O FMT IN OUT ~~ Convert (vmdk→qcow2, -c compress)
+- resize FILE +10G ~~ Grow (VM off)
+- snapshot -c|-l|-a|-d ~~ Internal snapshots
+- check FILE ~~ Consistency check
+> qemu-img info disk.qcow2 ~~ Details
+> qemu-img convert -O qcow2 disk.vmdk disk.qcow2 ~~ Import from VMware
+
+@gsettings ~~ Read and change GNOME settings
+$ gsettings COMMAND SCHEMA [KEY] [VALUE]
+- get SCHEMA KEY ~~ Read a value
+- set SCHEMA KEY VALUE ~~ Change it (applies immediately)
+- reset SCHEMA KEY ~~ Back to default
+- list-keys SCHEMA ~~ Keys in a schema
+- list-recursively [SCHEMA] ~~ Everything with values
+- list-schemas ~~ All schemas
+- range SCHEMA KEY ~~ Allowed values
+> gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' ~~ Dark mode
+> gsettings list-recursively org.gnome.desktop.interface | less ~~ Explore
+> gsettings reset org.gnome.desktop.interface text-scaling-factor ~~ Undo a change
+
+@dconf ~~ Low-level settings database (GNOME)
+$ dconf COMMAND [ARGS]
+- dump PATH ~~ Export a tree as text
+- load PATH ~~ Import (from stdin)
+- read / write KEY ~~ One key
+- reset -f PATH ~~ Reset a whole tree
+- watch PATH ~~ Print changes as they happen
+> dconf dump /org/gnome/ > gnome.ini ~~ Back up GNOME settings
+> dconf load /org/gnome/ < gnome.ini ~~ Restore
+> dconf watch / ~~ Find which key a setting changes
+
+@gnome-extensions ~~ Manage GNOME Shell extensions
+$ gnome-extensions COMMAND [UUID]
+- list ~~ Installed (--enabled, --user)
+- enable / disable UUID ~~ Turn on/off
+- info UUID ~~ Details
+- prefs UUID ~~ Open settings
+- install ZIP ~~ Install from a zip (--force)
+- uninstall UUID ~~ Remove
+> gnome-extensions list --enabled ~~ Active extensions
+
+@xdg-open ~~ Open a file or URL with the default app
+$ xdg-open FILE|URL
+- FILE ~~ Open with the default app for its type
+- URL ~~ Open in the default browser
+- --help / --version ~~ Help / version
+> xdg-open report.pdf ~~ Opens your PDF viewer
+> xdg-open . ~~ File manager here
+
+@wpctl ~~ PipeWire/WirePlumber audio control
+$ wpctl COMMAND [ARGS]
+- status ~~ Devices, sinks, sources, streams (with IDs)
+- set-volume ID 50% ~~ Volume (5%+ / 5%- relative)
+- set-mute ID toggle ~~ Mute
+- set-default ID ~~ Default output/input
+- inspect ID ~~ Details
+- @DEFAULT_AUDIO_SINK@ ~~ Alias for the current output
+> wpctl status ~~ Overview
+> wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ ~~ Louder
+
+@pactl ~~ PulseAudio-compatible control (works with PipeWire)
+$ pactl COMMAND [ARGS]
+- list short sinks|sources ~~ Devices
+- set-default-sink NAME ~~ Default output
+- set-sink-volume NAME 50% ~~ Volume
+- load-module ~~ Virtual sinks etc.
+> pactl list short sinks ~~ Outputs
+
+@bluetoothctl ~~ Bluetooth from the terminal
+$ bluetoothctl [COMMAND]
+- power on ~~ Turn the adapter on
+- scan on ~~ Discover devices
+- pair MAC ~~ Pair
+- trust MAC ~~ Auto-reconnect
+- connect / disconnect MAC ~~ Connect
+- devices ~~ Known devices
+- remove MAC ~~ Forget
+> bluetoothctl devices ~~ Known devices
+> bluetoothctl connect AA:BB:CC:DD:EE:FF ~~ Connect headphones
+
+@rfkill ~~ Radio switches (Wi-Fi, Bluetooth)
+$ rfkill [COMMAND] [ID|TYPE]
+- list ~~ Soft/hard blocked status
+- block / unblock TYPE ~~ wifi, bluetooth, all
+> rfkill list ~~ Is Wi-Fi blocked?
+> sudo rfkill unblock wifi ~~ Unblock
+
+@ffmpeg ~~ Convert and edit audio/video
+$ ffmpeg [GLOBAL] -i INPUT [OPTIONS] OUTPUT
+- -i FILE ~~ Input (repeat for more)
+- -c copy ~~ No re-encoding (fast, lossless)
+- -c:v / -c:a CODEC ~~ Video / audio codec (libx264, libopus…)
+- -crf N ~~ Quality (lower = better; 18-28)
+- -b:a 128k ~~ Audio bitrate
+- -ss / -to / -t ~~ Start / end / duration
+- -vf FILTER ~~ Video filter (scale=-2:720, crop, fps…)
+- -af FILTER ~~ Audio filter (loudnorm, atempo…)
+- -map ~~ Choose streams
+- -an / -vn / -sn ~~ Drop audio / video / subtitles
+- -y ~~ Overwrite output
+- -hide_banner ~~ Less noise
+> ffmpeg -i in.mov -c:v libx264 -crf 23 -c:a aac out.mp4 ~~ Convert to MP4
+> ffmpeg -ss 00:01:00 -to 00:02:00 -i in.mp4 -c copy clip.mp4 ~~ Cut without re-encoding
+> ffmpeg -i video.mp4 -vn -c:a libmp3lame -q:a 2 audio.mp3 ~~ Extract audio
+
+@ffprobe ~~ Inspect media files
+$ ffprobe [OPTIONS] FILE
+- -hide_banner ~~ Less noise
+- -show_streams / -show_format ~~ Details
+- -v error ~~ Only errors
+- -show_entries … -of csv=p=0 ~~ Pick fields (scripts)
+> ffprobe -hide_banner video.mp4 ~~ Codecs, length, bitrate
+
+@yt-dlp ~~ Download video/audio from websites
+$ yt-dlp [OPTIONS] URL
+- -F ~~ List formats
+- -f FORMAT ~~ Choose formats (bv*+ba/b)
+- -S res:1080 ~~ Prefer up to 1080p
+- -x --audio-format mp3 ~~ Audio only
+- --embed-subs --sub-langs en ~~ Subtitles
+- -o TEMPLATE ~~ Output name
+- -I 1:5 ~~ Playlist items
+> yt-dlp -S res:1080 "URL" ~~ Best ≤1080p
+> yt-dlp -x --audio-format mp3 "URL" ~~ MP3
+
+@magick ~~ ImageMagick image conversion
+$ magick INPUT [OPTIONS] OUTPUT
+- -resize 50% / 1920x ~~ Scale
+- -quality N ~~ JPEG/WebP quality
+- -crop WxH+X+Y ~~ Crop
+- -rotate 90 ~~ Rotate
+- -strip ~~ Remove metadata
+- identify FILE ~~ Image info
+- mogrify ~~ Edit files in place (batch)
+> magick in.png -resize 50% out.jpg ~~ Resize + convert
+> magick identify photo.jpg ~~ Size + format
+
+@exiftool ~~ Read and write photo metadata
+$ exiftool [OPTIONS] FILE...
+- -all= ~~ Remove all metadata
+- -gps:all= ~~ Remove location only
+- -TAG ~~ Show one tag (e.g. -DateTimeOriginal)
+- '-FileName<DateTimeOriginal' ~~ Rename by date taken
+- -overwrite_original ~~ No backup copies
+- -r ~~ Recursive
+> exiftool photo.jpg ~~ All metadata
+> exiftool -gps:all= -overwrite_original *.jpg ~~ Strip location
+
+@restic ~~ Encrypted, deduplicated backups
+$ restic -r REPO COMMAND [OPTIONS]
+- init ~~ Create a repository
+- backup PATH ~~ Back up (--exclude, --exclude-caches, --tag)
+- snapshots ~~ List snapshots
+- restore ID --target DIR ~~ Restore (--include PATH)
+- ls / find / diff / dump ~~ Explore snapshots
+- forget --keep-daily 7 … --prune ~~ Apply retention + free space
+- check ~~ Verify the repo (--read-data-subset)
+- mount DIR ~~ Browse snapshots as folders
+- -r / RESTIC_REPOSITORY ~~ Repo location (local, sftp:, s3:, rclone:)
+> restic -r /run/media/$USER/USB/restic init ~~ New repo
+> restic backup ~ --exclude-caches ~~ Back up home
+> restic snapshots ~~ What exists
+> restic restore latest --target /tmp/r --include ~/Documents ~~ Restore a folder
+
+@borg ~~ BorgBackup: deduplicating, encrypted backups
+$ borg COMMAND [OPTIONS] REPO::ARCHIVE [PATH]
+- init -e repokey-blake2 REPO ~~ New repo
+- create ::NAME PATH ~~ New archive (--stats, --compression zstd)
+- list ~~ Archives (or files in one)
+- extract ::NAME [PATH] ~~ Restore into the current folder
+- diff ::A B ~~ Changes between archives
+- prune --keep-daily 7 … ~~ Retention
+- compact ~~ Free space after prune
+- check ~~ Verify
+- mount ::NAME DIR ~~ Browse
+> borg create --stats ::'{hostname}-{now}' ~ ~~ Back up home
+> borg list ~~ Archives
+
+@rclone ~~ Sync files with 70+ cloud storages
+$ rclone COMMAND SRC DEST [FLAGS]
+- config ~~ Set up remotes (wizard)
+- ls / lsd REMOTE: ~~ List files / folders
+- copy SRC DEST ~~ Copy (never deletes)
+- sync SRC DEST ~~ Make DEST identical (deletes!)
+- check SRC DEST ~~ Compare
+- mount REMOTE: DIR ~~ Cloud as a folder
+- bisync ~~ Two-way sync
+- -P ~~ Progress
+- --dry-run ~~ Preview
+- --backup-dir ~~ Keep old versions
+> rclone copy ~/Documents gdrive:Backup -P ~~ Upload
+> rclone sync --dry-run ~/Photos gdrive:Photos ~~ Preview a mirror
+
+@btrfs ~~ Btrfs filesystem tool
+$ btrfs COMMAND SUBCOMMAND [ARGS]
+- filesystem usage / ~~ Real space usage
+- subvolume list / ~~ Subvolumes
+- subvolume snapshot -r SRC DST ~~ Read-only snapshot
+- subvolume delete PATH ~~ Remove a subvolume/snapshot
+- send / receive ~~ Copy snapshots between disks
+- scrub start / ~~ Verify checksums (scrub status)
+- balance start ~~ Rebalance chunks
+- device stats / ~~ Error counters
+> sudo btrfs filesystem usage / ~~ Space
+> sudo btrfs scrub start / && sudo btrfs scrub status / ~~ Integrity check
+
+@snapper ~~ Btrfs snapshot manager
+$ snapper [-c CONFIG] COMMAND [ARGS]
+- create-config PATH ~~ Start managing a subvolume
+- create -d "desc" ~~ New snapshot
+- list ~~ Snapshots
+- status N..M ~~ Changed files
+- diff N..M FILE ~~ Exact changes
+- undochange N..M [FILE] ~~ Revert changes
+- delete N ~~ Remove snapshots
+> sudo snapper -c home create -d "before cleanup" ~~ Snapshot
+> sudo snapper -c home list ~~ List
+
+@rpm-ostree ~~ Atomic Fedora (Silverblue/Kinoite) system tool
+$ rpm-ostree COMMAND [OPTIONS]
+- status ~~ Deployments (booted, staged, rollback)
+- upgrade ~~ Stage an update (--check, --preview, -r reboot)
+- rollback ~~ Boot the previous deployment
+- install / uninstall PKG ~~ Layer packages
+- override remove|replace|reset ~~ Change base packages
+- rebase REF ~~ Switch edition/version
+- kargs ~~ Kernel arguments (--append, --delete)
+- reset ~~ Remove all layering/overrides
+- cleanup -p|-r|-m ~~ Remove pending/rollback/metadata
+> rpm-ostree status ~~ What is booted
+> rpm-ostree upgrade && systemctl reboot ~~ Update
+> rpm-ostree rollback ~~ Go back after a bad update
+
+@ansible ~~ Run ad-hoc tasks on many machines
+$ ansible PATTERN -i INVENTORY -m MODULE -a ARGS
+- -i FILE ~~ Inventory
+- -m MODULE ~~ ping, dnf, copy, service, shell…
+- -a "args" ~~ Module arguments
+- -b ~~ Become root (sudo)
+- -K ~~ Ask for the sudo password
+- --check ~~ Dry run
+> ansible all -i hosts.ini -m ping ~~ Can I reach everything?
+> ansible web -i hosts.ini -b -m dnf -a "name=htop state=present" ~~ Install on a group
+
+@ansible-playbook ~~ Run Ansible playbooks
+$ ansible-playbook [OPTIONS] PLAYBOOK.yml
+- -i FILE ~~ Inventory
+- -l PATTERN ~~ Limit to some hosts
+- --check --diff ~~ Dry run, show changes
+- -t TAGS ~~ Only tagged tasks
+- -K ~~ Ask sudo password
+- --ask-vault-pass ~~ Decrypt vault files
+- -v / -vvv ~~ Verbosity
+> ansible-playbook -i hosts.ini site.yml --check --diff ~~ Preview
+> ansible-playbook -i hosts.ini site.yml -l web1 ~~ One host
+
+@mariadb ~~ MariaDB client
+$ mariadb [OPTIONS] [DB]
+- -u USER -p ~~ User + ask password
+- -h HOST ~~ Server
+- -e "SQL" ~~ Run and exit
+- -t ~~ Table output in batch mode
+- < file.sql ~~ Run a script
+> sudo mariadb ~~ Root shell (socket auth)
+> mariadb -u app -p appdb -e "SHOW TABLES;" ~~ One query
+
+@psql ~~ PostgreSQL client
+$ psql [OPTIONS] [DBNAME [USER]]
+- -U USER / -d DB / -h HOST ~~ Connection
+- -c "SQL" ~~ Run and exit
+- -f FILE ~~ Run a script
+- \l \dt \d+ \du ~~ (inside) databases / tables / describe / roles
+- \x auto ~~ (inside) vertical output for wide rows
+- \q ~~ (inside) quit
+> sudo -u postgres psql ~~ Admin shell
+> psql -h localhost -U app appdb -c "SELECT count(*) FROM orders;" ~~ One query
+
+@sqlite3 ~~ SQLite database shell
+$ sqlite3 [OPTIONS] FILE.db [SQL]
+- -box / -json / -csv ~~ Output modes
+- -header ~~ Column names
+- .tables / .schema ~~ (inside) tables / definitions
+- .import --csv FILE TABLE ~~ (inside) import CSV
+- .backup / VACUUM INTO ~~ Safe copies
+- .quit ~~ (inside) exit
+> sqlite3 -box app.db "SELECT * FROM users LIMIT 5;" ~~ Pretty query
+
+@valkey-cli ~~ Valkey/Redis command line
+$ valkey-cli [-h HOST] [-p PORT] [-a PASS] [COMMAND]
+- ping ~~ Alive?
+- get / set KEY [EX s] ~~ Read / write
+- --scan --pattern P ~~ Find keys safely
+- info [section] ~~ Stats (memory, clients…)
+- monitor ~~ See every command live
+- config get|set ~~ Settings
+> valkey-cli info memory ~~ Memory use
+
+@nginx ~~ nginx web server control
+$ nginx [-t] [-T] [-s signal]
+- -t ~~ Test the configuration
+- -T ~~ Test + print the full config
+- -s reload ~~ Reload (prefer systemctl reload nginx)
+- -v / -V ~~ Version / build options
+> sudo nginx -t && sudo systemctl reload nginx ~~ Safe config change
+
+@chronyc ~~ chrony time daemon control
+$ chronyc [COMMAND]
+- tracking ~~ Current offset + accuracy
+- sources -v ~~ Time servers and their quality
+- sourcestats ~~ Statistics per source
+- makestep ~~ Jump the clock now
+- clients ~~ Who uses this machine as NTP server
+> chronyc tracking ~~ Is the clock in sync?
+> sudo chronyc makestep ~~ Fix a big offset now
+
+@iostat ~~ Disk and CPU I/O statistics (sysstat)
+$ iostat [OPTIONS] [INTERVAL [COUNT]]
+- -x ~~ Extended stats (%util, await)
+- -h ~~ Human-readable
+- -z ~~ Hide idle devices
+> iostat -xz 2 ~~ Live disk load every 2 s
+
+@vmstat ~~ Memory, CPU, swap activity
+$ vmstat [INTERVAL [COUNT]]
+- -s ~~ Memory totals
+- -w ~~ Wide output
+> vmstat 1 5 ~~ 5 samples, 1 s apart (watch si/so for swapping)
+
+@watch ~~ Repeat a command and show its output
+$ watch [OPTIONS] COMMAND
+- -n SEC ~~ Interval
+- -d ~~ Highlight changes
+- -t ~~ No header
+> watch -n 2 -d 'ss -s' ~~ Live socket summary
