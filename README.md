@@ -53,12 +53,12 @@ Basics · Troubleshoot · DNF · Files · Users · Network · Services · System
 
 ## 🚀 Use it
 
-**Online:** open **https://YOUR-USERNAME.github.io/fedora-bible/**, then choose *Install app* in the header or in your browser's menu.
+**Online:** open **https://soorajacontec.github.io/fedora-bible/**, then choose *Install app* in the header or in your browser's menu.
 
 **Locally:**
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/fedora-bible.git
+git clone https://github.com/soorajacontec/fedora-bible.git
 cd fedora-bible
 python3 -m http.server 8000
 # open http://localhost:8000
